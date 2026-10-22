@@ -1,0 +1,45 @@
+CREATE TABLE Apartado (
+    id TEXT NOT NULL PRIMARY KEY,
+    clienteId TEXT NOT NULL,
+    productoId TEXT NOT NULL,
+    saldoPendienteCentavos INTEGER NOT NULL,
+    estado TEXT NOT NULL,
+    fechaCreacion INTEGER NOT NULL,
+    fechaUltimoAbono INTEGER NOT NULL,
+    -- Campos para sincronización offline (last-write-wins por registro)
+    lastModifiedAt INTEGER NOT NULL,
+    lastModifiedByDeviceId TEXT NOT NULL,
+    syncPending INTEGER NOT NULL DEFAULT 1
+);
+
+insertApartado:
+INSERT INTO Apartado(
+    id, clienteId, productoId, saldoPendienteCentavos, estado,
+    fechaCreacion, fechaUltimoAbono, lastModifiedAt, lastModifiedByDeviceId, syncPending
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateApartado:
+UPDATE Apartado
+SET saldoPendienteCentavos = ?,
+    estado = ?,
+    fechaUltimoAbono = ?,
+    lastModifiedAt = ?,
+    lastModifiedByDeviceId = ?,
+    syncPending = 1
+WHERE id = ?;
+
+selectAllApartados:
+SELECT * FROM Apartado ORDER BY fechaUltimoAbono DESC;
+
+selectApartadosPorEstado:
+SELECT * FROM Apartado WHERE estado = ?;
+
+selectApartadoById:
+SELECT * FROM Apartado WHERE id = ?;
+
+selectPendientesDeSync:
+SELECT * FROM Apartado WHERE syncPending = 1;
+
+marcarComoSincronizado:
+UPDATE Apartado SET syncPending = 0 WHERE id = ?;

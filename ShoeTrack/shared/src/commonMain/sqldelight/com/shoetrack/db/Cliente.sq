@@ -1,0 +1,16 @@
+CREATE TABLE Cliente (
+    id TEXT NOT NULL PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    telefono TEXT NOT NULL,
+    fechaRegistro INTEGER NOT NULL
+);
+
+upsertCliente:
+INSERT OR REPLACE INTO Cliente(id, nombre, telefono, fechaRegistro)
+VALUES (?, ?, ?, ?);
+
+selectAllClientes:
+SELECT * FROM Cliente ORDER BY nombre ASC;
+
+selectClienteById:
+SELECT * FROM Cliente WHERE id = ?;
