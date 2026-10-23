@@ -1,0 +1,13 @@
+CREATE TABLE Product (
+    id TEXT NOT NULL PRIMARY KEY,
+    description TEXT NOT NULL,
+    photoPath TEXT NOT NULL,
+    totalPriceCents INTEGER NOT NULL
+);
+
+upsertProduct:
+INSERT OR REPLACE INTO Product(id, description, photoPath, totalPriceCents)
+VALUES (?, ?, ?, ?);
+
+selectProductById:
+SELECT * FROM Product WHERE id = ?;

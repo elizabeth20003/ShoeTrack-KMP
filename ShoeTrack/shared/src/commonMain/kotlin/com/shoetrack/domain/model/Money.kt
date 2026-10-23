@@ -2,22 +2,20 @@ package com.shoetrack.domain.model
 
 import kotlin.jvm.JvmInline
 
-/**
- * Representa dinero en centavos para evitar errores de redondeo
- * que ocurrirían usando Double/Float para valores monetarios.
- */
+/** Money as a whole number of cents, avoiding floating-point rounding errors. */
 @JvmInline
-value class Money(val centavos: Long) {
+value class Money(val cents: Long) {
 
-    operator fun minus(otro: Money): Money = Money(centavos - otro.centavos)
-    operator fun plus(otro: Money): Money = Money(centavos + otro.centavos)
-    operator fun compareTo(otro: Money): Int = centavos.compareTo(otro.centavos)
+    operator fun plus(other: Money): Money = Money(cents + other.cents)
+    operator fun minus(other: Money): Money = Money(cents - other.cents)
+    operator fun compareTo(other: Money): Int = cents.compareTo(other.cents)
 
-    val esPositivo: Boolean get() = centavos > 0
-    val esCeroOMenos: Boolean get() = centavos <= 0
+    val isPositive: Boolean get() = cents > 0
+    val isZeroOrLess: Boolean get() = cents <= 0
 
     companion object {
-        fun pesos(pesos: Long): Money = Money(pesos * 100)
-        val CERO = Money(0)
+        val ZERO = Money(0)
+
+        fun fromUnits(units: Long): Money = Money(units * 100)
     }
 }

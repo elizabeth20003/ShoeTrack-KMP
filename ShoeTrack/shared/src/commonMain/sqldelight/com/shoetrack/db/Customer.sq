@@ -1,0 +1,16 @@
+CREATE TABLE Customer (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    registeredAt INTEGER NOT NULL
+);
+
+upsertCustomer:
+INSERT OR REPLACE INTO Customer(id, name, phone, registeredAt)
+VALUES (?, ?, ?, ?);
+
+selectAllCustomers:
+SELECT * FROM Customer ORDER BY name ASC;
+
+selectCustomerById:
+SELECT * FROM Customer WHERE id = ?;

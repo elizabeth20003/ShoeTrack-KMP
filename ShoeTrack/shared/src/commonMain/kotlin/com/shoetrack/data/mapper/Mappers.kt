@@ -1,70 +1,69 @@
 package com.shoetrack.data.mapper
 
-import com.shoetrack.domain.model.Abono
-import com.shoetrack.domain.model.Apartado
-import com.shoetrack.domain.model.ApartadoState
-import com.shoetrack.domain.model.Cliente
+import com.shoetrack.domain.model.Customer
+import com.shoetrack.domain.model.Layaway
+import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Money
-import com.shoetrack.domain.model.Producto
+import com.shoetrack.domain.model.Payment
+import com.shoetrack.domain.model.Product
 import kotlin.time.Instant
-import com.shoetrack.db.Abono as AbonoRow
-import com.shoetrack.db.Apartado as ApartadoRow
-import com.shoetrack.db.Cliente as ClienteRow
-import com.shoetrack.db.Producto as ProductoRow
+import com.shoetrack.db.Customer as CustomerRow
+import com.shoetrack.db.Layaway as LayawayRow
+import com.shoetrack.db.Payment as PaymentRow
+import com.shoetrack.db.Product as ProductRow
 
-// Conversión entre las filas generadas por SQLDelight (tipos primitivos) y los
-// modelos del dominio. Las fechas se guardan como milisegundos desde epoch y el
-// dinero como centavos.
+// Maps SQLDelight rows to domain models.
+// Dates are stored as epoch milliseconds and money as cents.
 
-internal fun ClienteRow.toDomain(): Cliente = Cliente(
+internal fun CustomerRow.toDomain(): Customer = Customer(
     id = id,
-    nombre = nombre,
-    telefono = telefono,
-    fechaRegistro = Instant.fromEpochMilliseconds(fechaRegistro),
+    name = name,
+    phone = phone,
+    registeredAt = Instant.fromEpochMilliseconds(registeredAt),
 )
 
-internal fun ProductoRow.toDomain(): Producto = Producto(
+internal fun ProductRow.toDomain(): Product = Product(
     id = id,
-    descripcion = descripcion,
-    fotoPath = fotoPath,
-    precioTotal = Money(precioTotalCentavos),
+    description = description,
+    photoPath = photoPath,
+    totalPrice = Money(totalPriceCents),
 )
 
-internal fun AbonoRow.toDomain(): Abono = Abono(
+internal fun PaymentRow.toDomain(): Payment = Payment(
     id = id,
-    apartadoId = apartadoId,
-    monto = Money(montoCentavos),
-    fecha = Instant.fromEpochMilliseconds(fecha),
-    registradoPorDeviceId = registradoPorDeviceId,
+    layawayId = layawayId,
+    amount = Money(amountCents),
+    paidAt = Instant.fromEpochMilliseconds(paidAt),
+    recordedByDeviceId = recordedByDeviceId,
 )
 
-internal fun ApartadoRow.toDomain(abonos: List<Abono> = emptyList()): Apartado = Apartado(
+internal fun LayawayRow.toDomain(payments: List<Payment> = emptyList()): Layaway = Layaway(
     id = id,
-    clienteId = clienteId,
-    productoId = productoId,
-    saldoPendiente = Money(saldoPendienteCentavos),
-    estado = estado.toApartadoState(),
-    fechaCreacion = Instant.fromEpochMilliseconds(fechaCreacion),
-    fechaUltimoAbono = Instant.fromEpochMilliseconds(fechaUltimoAbono),
-    abonos = abonos,
+    customerId = customerId,
+    productId = productId,
+    remainingBalance = Money(remainingBalanceCents),
+    state = state.toLayawayState(),
+    createdAt = Instant.fromEpochMilliseconds(createdAt),
+    lastPaymentAt = Instant.fromEpochMilliseconds(lastPaymentAt),
+    payments = payments,
 )
 
-internal fun ApartadoState.toDbValue(): String = when (this) {
-    ApartadoState.Activo -> ESTADO_ACTIVO
-    ApartadoState.EnMora -> ESTADO_EN_MORA
-    ApartadoState.Completado -> ESTADO_COMPLETADO
-    ApartadoState.Cancelado -> ESTADO_CANCELADO
+internal fun LayawayState.toDbValue(): String = when (this) {
+    LayawayState.Active -> STATE_ACTIVE
+    LayawayState.Overdue -> STATE_OVERDUE
+    LayawayState.Completed -> STATE_COMPLETED
+    LayawayState.Cancelled -> STATE_CANCELLED
 }
 
-internal fun String.toApartadoState(): ApartadoState = when (this) {
-    ESTADO_ACTIVO -> ApartadoState.Activo
-    ESTADO_EN_MORA -> ApartadoState.EnMora
-    ESTADO_COMPLETADO -> ApartadoState.Completado
-    ESTADO_CANCELADO -> ApartadoState.Cancelado
-    else -> throw IllegalStateException("Estado de apartado desconocido en la base de datos: $this")
+internal fun String.toLayawayState(): LayawayState = when (this) {
+    STATE_ACTIVE -> LayawayState.Active
+    STATE_OVERDUE -> LayawayState.Overdue
+    STATE_COMPLETED -> LayawayState.Completed
+    STATE_CANCELLED -> LayawayState.Cancelled
+    else -> error("Unknown layaway state in the database: $this")
 }
 
-private const val ESTADO_ACTIVO = "ACTIVO"
-private const val ESTADO_EN_MORA = "EN_MORA"
-private const val ESTADO_COMPLETADO = "COMPLETADO"
-private const val ESTADO_CANCELADO = "CANCELADO"
+private const val STATE_ACTIVE = "ACTIVE"
+private const val STATE_OVERDUE = "OVERDUE"
+private const val STATE_COMPLETED = "COMPLETED"
+private const val STATE_CANCELLED = "CANCELLED"

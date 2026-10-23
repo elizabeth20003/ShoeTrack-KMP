@@ -5,7 +5,7 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.shoetrack.db.ShoeTrackDatabase
 import java.io.File
 
-/** Driver para la app de escritorio. Guarda la base en `~/.shoetrack/shoetrack.db`. */
+/** Desktop driver; stores the database at `~/.shoetrack/shoetrack.db`. */
 class JvmDatabaseDriverFactory(
     private val directorio: File = File(System.getProperty("user.home"), ".shoetrack"),
 ) : DatabaseDriverFactory {

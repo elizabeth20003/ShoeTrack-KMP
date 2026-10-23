@@ -1,0 +1,45 @@
+CREATE TABLE Layaway (
+    id TEXT NOT NULL PRIMARY KEY,
+    customerId TEXT NOT NULL,
+    productId TEXT NOT NULL,
+    remainingBalanceCents INTEGER NOT NULL,
+    state TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    lastPaymentAt INTEGER NOT NULL,
+    -- Offline sync fields (last-write-wins per record)
+    lastModifiedAt INTEGER NOT NULL,
+    lastModifiedByDeviceId TEXT NOT NULL,
+    syncPending INTEGER NOT NULL DEFAULT 1
+);
+
+insertLayaway:
+INSERT INTO Layaway(
+    id, customerId, productId, remainingBalanceCents, state,
+    createdAt, lastPaymentAt, lastModifiedAt, lastModifiedByDeviceId, syncPending
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateLayaway:
+UPDATE Layaway
+SET remainingBalanceCents = ?,
+    state = ?,
+    lastPaymentAt = ?,
+    lastModifiedAt = ?,
+    lastModifiedByDeviceId = ?,
+    syncPending = 1
+WHERE id = ?;
+
+selectAllLayaways:
+SELECT * FROM Layaway ORDER BY lastPaymentAt DESC;
+
+selectLayawaysByState:
+SELECT * FROM Layaway WHERE state = ?;
+
+selectLayawayById:
+SELECT * FROM Layaway WHERE id = ?;
+
+selectPendingSync:
+SELECT * FROM Layaway WHERE syncPending = 1;
+
+markAsSynced:
+UPDATE Layaway SET syncPending = 0 WHERE id = ?;

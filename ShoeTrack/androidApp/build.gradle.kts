@@ -20,11 +20,11 @@ dependencies {
 }
 
 android {
-    namespace = "org.example.project"
+    namespace = "com.shoetrack"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "org.example.project"
+        applicationId = "com.shoetrack"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
