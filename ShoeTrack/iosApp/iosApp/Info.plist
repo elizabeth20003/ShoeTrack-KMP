@@ -4,5 +4,7 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>ShoeTrack uses the camera to photograph the shoes being set aside.</string>
 </dict>
 </plist>

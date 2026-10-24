@@ -5,17 +5,16 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.shoetrack.db.ShoeTrackDatabase
 import java.io.File
 
-/** Desktop driver; stores the database at `~/.shoetrack/shoetrack.db`. */
 class JvmDatabaseDriverFactory(
-    private val directorio: File = File(System.getProperty("user.home"), ".shoetrack"),
+    private val directory: File = File(System.getProperty("user.home"), ".shoetrack"),
 ) : DatabaseDriverFactory {
 
     override fun createDriver(): SqlDriver {
-        directorio.mkdirs()
-        val archivo = File(directorio, DATABASE_NAME)
-        val esNueva = !archivo.exists()
-        val driver = JdbcSqliteDriver("jdbc:sqlite:${archivo.absolutePath}")
-        if (esNueva) {
+        directory.mkdirs()
+        val file = File(directory, DATABASE_NAME)
+        val isNew = !file.exists()
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        if (isNew) {
             ShoeTrackDatabase.Schema.create(driver)
         }
         return driver

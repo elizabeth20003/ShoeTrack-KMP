@@ -3,6 +3,7 @@ package com.shoetrack.data.mapper
 import com.shoetrack.domain.model.Customer
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
+import com.shoetrack.domain.model.LayawaySummary
 import com.shoetrack.domain.model.Money
 import com.shoetrack.domain.model.Payment
 import com.shoetrack.domain.model.Product
@@ -46,6 +47,24 @@ internal fun LayawayRow.toDomain(payments: List<Payment> = emptyList()): Layaway
     createdAt = Instant.fromEpochMilliseconds(createdAt),
     lastPaymentAt = Instant.fromEpochMilliseconds(lastPaymentAt),
     payments = payments,
+)
+
+internal fun layawaySummaryOf(
+    id: String,
+    customerName: String,
+    productDescription: String,
+    productPhotoPath: String,
+    remainingBalanceCents: Long,
+    state: String,
+    lastPaymentAt: Long,
+): LayawaySummary = LayawaySummary(
+    id = id,
+    customerName = customerName,
+    productDescription = productDescription,
+    productPhotoPath = productPhotoPath,
+    remainingBalance = Money(remainingBalanceCents),
+    state = state.toLayawayState(),
+    lastPaymentAt = Instant.fromEpochMilliseconds(lastPaymentAt),
 )
 
 internal fun LayawayState.toDbValue(): String = when (this) {

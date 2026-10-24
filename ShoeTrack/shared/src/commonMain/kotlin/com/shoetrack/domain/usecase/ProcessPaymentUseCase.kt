@@ -4,7 +4,6 @@ import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Payment
 
-/** Applies a payment to a layaway and completes it once the balance reaches zero. */
 class ProcessPaymentUseCase {
 
     operator fun invoke(layaway: Layaway, payment: Payment): Layaway {

@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">ShoeTrack</string>
+    <string name="layaways_title">Layaways</string>
+    <string name="empty_title">No layaways yet</string>
+    <string name="empty_message">Set aside a pair of shoes and it will show up here.</string>
+    <string name="balance_label">Balance: %1$s</string>
+    <string name="last_payment_label">Last payment: %1$s</string>
+    <string name="state_active">Active</string>
+    <string name="state_overdue">Overdue</string>
+    <string name="state_completed">Completed</string>
+    <string name="state_cancelled">Cancelled</string>
+    <string name="new_layaway">New layaway</string>
+    <string name="back">Back</string>
+    <string name="customer_name">Customer name</string>
+    <string name="customer_phone">Phone</string>
+    <string name="product_description">Shoes (brand, model, size)</string>
+    <string name="price">Total price</string>
+    <string name="initial_payment">Initial payment (optional)</string>
+    <string name="save">Save</string>
+    <string name="layaway_details_title">Layaway</string>
+    <string name="total_price_label">Total: %1$s</string>
+    <string name="payments_title">Payments</string>
+    <string name="no_payments">No payments yet</string>
+    <string name="add_payment">Add payment</string>
+    <string name="payment_amount">Amount</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="layaway_not_found">This layaway no longer exists.</string>
+    <string name="required_field">Required</string>
+    <string name="error_load_failed">Something went wrong while loading. Please try again.</string>
+    <string name="error_save_failed">The layaway could not be saved. Please try again.</string>
+    <string name="error_payment_failed">The payment could not be registered. Please try again.</string>
+    <string name="invalid_phone">Enter a 10-digit mobile number starting with 3</string>
+    <string name="take_photo">Take photo</string>
+    <string name="choose_photo">Choose photo</string>
+    <string name="error_photo_failed">The photo could not be saved. Please try again.</string>
+</resources>

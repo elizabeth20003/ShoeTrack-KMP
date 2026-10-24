@@ -29,8 +29,19 @@ SET remainingBalanceCents = ?,
     syncPending = 1
 WHERE id = ?;
 
-selectAllLayaways:
-SELECT * FROM Layaway ORDER BY lastPaymentAt DESC;
+selectAllSummaries:
+SELECT
+    Layaway.id,
+    Customer.name AS customerName,
+    Product.description AS productDescription,
+    Product.photoPath AS productPhotoPath,
+    Layaway.remainingBalanceCents,
+    Layaway.state,
+    Layaway.lastPaymentAt
+FROM Layaway
+JOIN Customer ON Customer.id = Layaway.customerId
+JOIN Product ON Product.id = Layaway.productId
+ORDER BY Layaway.lastPaymentAt DESC;
 
 selectLayawaysByState:
 SELECT * FROM Layaway WHERE state = ?;

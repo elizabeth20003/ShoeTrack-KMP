@@ -1,6 +1,8 @@
 package com.shoetrack.di
 
+import com.shoetrack.data.id.UuidIdGenerator
 import com.shoetrack.data.local.DatabaseDriverFactory
+import com.shoetrack.data.photo.FileSystemPhotoStorage
 import com.shoetrack.data.repository.CustomerRepositoryImpl
 import com.shoetrack.data.repository.LayawayRepositoryImpl
 import com.shoetrack.data.repository.ProductRepositoryImpl
@@ -8,32 +10,80 @@ import com.shoetrack.db.ShoeTrackDatabase
 import com.shoetrack.domain.repository.CustomerRepository
 import com.shoetrack.domain.repository.LayawayRepository
 import com.shoetrack.domain.repository.ProductRepository
+import com.shoetrack.domain.service.IdGenerator
+import com.shoetrack.domain.service.PhotoStorage
 import com.shoetrack.domain.usecase.CreateLayawayUseCase
 import com.shoetrack.domain.usecase.EvaluateOverdueUseCase
+import com.shoetrack.domain.usecase.GetLayawayDetailUseCase
+import com.shoetrack.domain.usecase.ObserveLayawaysUseCase
+import com.shoetrack.domain.usecase.LoadPhotoUseCase
 import com.shoetrack.domain.usecase.ProcessPaymentUseCase
+import com.shoetrack.domain.usecase.RefreshOverdueUseCase
+import com.shoetrack.domain.usecase.RegisterPaymentUseCase
+import com.shoetrack.domain.usecase.SavePhotoUseCase
+import com.shoetrack.domain.usecase.StartLayawayUseCase
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import kotlin.time.Clock
 
-private val domainModule: Module = module {
+private fun domainModule(deviceId: String): Module = module {
+    single<Clock> { Clock.System }
+    single<IdGenerator> { UuidIdGenerator() }
+
     factory { CreateLayawayUseCase() }
     factory { ProcessPaymentUseCase() }
     factory { EvaluateOverdueUseCase() }
+
+    factory {
+        RegisterPaymentUseCase(
+            layawayRepository = get(),
+            processPayment = get(),
+            idGenerator = get(),
+            clock = get(),
+            deviceId = deviceId,
+        )
+    }
+    factory {
+        StartLayawayUseCase(
+            customerRepository = get(),
+            productRepository = get(),
+            layawayRepository = get(),
+            createLayaway = get(),
+            registerPayment = get(),
+            idGenerator = get(),
+            clock = get(),
+        )
+    }
+    factory { RefreshOverdueUseCase(layawayRepository = get(), evaluateOverdue = get(), clock = get()) }
+    factory { ObserveLayawaysUseCase(get()) }
+    factory { SavePhotoUseCase(get()) }
+    factory { LoadPhotoUseCase(get()) }
+    factory {
+        GetLayawayDetailUseCase(
+            layawayRepository = get(),
+            customerRepository = get(),
+            productRepository = get(),
+        )
+    }
 }
 
-private fun dataModule(driverFactory: DatabaseDriverFactory, deviceId: String): Module = module {
+private fun dataModule(
+    driverFactory: DatabaseDriverFactory,
+    photosDirectory: String,
+    deviceId: String,
+): Module = module {
+    single<PhotoStorage> { FileSystemPhotoStorage(photosDirectory, idGenerator = get()) }
     single<ShoeTrackDatabase> { ShoeTrackDatabase(driverFactory.createDriver()) }
     single<CustomerRepository> { CustomerRepositoryImpl(get()) }
     single<ProductRepository> { ProductRepositoryImpl(get()) }
-    single<LayawayRepository> { LayawayRepositoryImpl(database = get(), deviceId = deviceId) }
+    single<LayawayRepository> {
+        LayawayRepositoryImpl(database = get(), deviceId = deviceId, clock = get())
+    }
 }
 
-/**
- * Starts dependency injection. Each app calls this once at launch with its own
- * [DatabaseDriverFactory] and a unique id for the device.
- */
-fun initKoin(driverFactory: DatabaseDriverFactory, deviceId: String) {
+fun initKoin(driverFactory: DatabaseDriverFactory, photosDirectory: String, deviceId: String) {
     startKoin {
-        modules(domainModule, dataModule(driverFactory, deviceId))
+        modules(domainModule(deviceId), dataModule(driverFactory, photosDirectory, deviceId))
     }
 }

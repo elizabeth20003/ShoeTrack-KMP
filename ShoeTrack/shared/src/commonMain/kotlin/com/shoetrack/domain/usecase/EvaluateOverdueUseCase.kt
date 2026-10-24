@@ -4,7 +4,6 @@ import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
 import kotlin.time.Instant
 
-/** Marks an active layaway as overdue once [overdueAfterDays] days pass without a payment. */
 class EvaluateOverdueUseCase(
     private val overdueAfterDays: Int = 30,
 ) {

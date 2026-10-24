@@ -2,17 +2,18 @@ package com.shoetrack.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.shoetrack.data.mapper.layawaySummaryOf
 import com.shoetrack.data.mapper.toDbValue
 import com.shoetrack.data.mapper.toDomain
 import com.shoetrack.db.ShoeTrackDatabase
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
+import com.shoetrack.domain.model.LayawaySummary
 import com.shoetrack.domain.model.Payment
 import com.shoetrack.domain.repository.LayawayRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 
@@ -85,11 +86,10 @@ internal class LayawayRepositoryImpl(
                 .map { it.toDomain() }
         }
 
-    override fun observeAll(): Flow<List<Layaway>> =
-        layawayQueries.selectAllLayaways()
+    override fun observeSummaries(): Flow<List<LayawaySummary>> =
+        layawayQueries.selectAllSummaries(mapper = ::layawaySummaryOf)
             .asFlow()
             .mapToList(dispatcher)
-            .map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun getPendingSync(): List<Layaway> = withContext(dispatcher) {
         layawayQueries.selectPendingSync().executeAsList().map { it.toDomain() }

@@ -48,6 +48,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             implementation(libs.ktor.client.android)
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.core.ktx)
             implementation(libs.sqldelight.android.driver)
         }
         commonMain.dependencies {
@@ -58,20 +60,24 @@ kotlin {
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
+            implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            // Dominio, persistencia y red
+            // Domain, persistence and networking
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.io.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.koin.core)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+            api(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines.extensions)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

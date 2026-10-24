@@ -2,14 +2,15 @@ package com.shoetrack.domain.repository
 
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
+import com.shoetrack.domain.model.LayawaySummary
 import com.shoetrack.domain.model.Payment
 import kotlinx.coroutines.flow.Flow
 
 /**
  * Persistence contract for layaways.
  *
- * Lists from [observeAll] and [getByState] come with an empty `payments`
- * to stay light; use [getById] for the full payment history.
+ * Lists from [getByState] come with an empty `payments` to stay light;
+ * use [getById] for the full payment history.
  */
 interface LayawayRepository {
 
@@ -25,9 +26,7 @@ interface LayawayRepository {
 
     suspend fun getByState(state: LayawayState): List<Layaway>
 
-    /** Emits all layaways, most recent payment first, whenever any of them changes. */
-    fun observeAll(): Flow<List<Layaway>>
+    fun observeSummaries(): Flow<List<LayawaySummary>>
 
-    /** Layaways with local changes not yet synced to other devices. */
     suspend fun getPendingSync(): List<Layaway>
 }
