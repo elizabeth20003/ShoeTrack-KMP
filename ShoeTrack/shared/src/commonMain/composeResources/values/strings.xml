@@ -34,4 +34,7 @@
     <string name="take_photo">Take photo</string>
     <string name="choose_photo">Choose photo</string>
     <string name="error_photo_failed">The photo could not be saved. Please try again.</string>
+    <string name="notification_channel_name">Overdue layaways</string>
+    <string name="notification_overdue_title">Layaway overdue</string>
+    <string name="notification_overdue_body">%1$s has not made a payment on %2$s. Balance: %3$s</string>
 </resources>

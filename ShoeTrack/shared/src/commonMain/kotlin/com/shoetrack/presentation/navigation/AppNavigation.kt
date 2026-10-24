@@ -1,6 +1,7 @@
 package com.shoetrack.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,9 +16,19 @@ import com.shoetrack.presentation.list.LayawayListViewModel
 import org.koin.mp.KoinPlatform
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    layawayToOpen: String? = null,
+    onLayawayOpened: () -> Unit = {},
+) {
     val navController = rememberNavController()
     val koin = KoinPlatform.getKoin()
+
+    LaunchedEffect(layawayToOpen) {
+        if (layawayToOpen != null) {
+            navController.navigate(LayawayDetailRoute(layawayToOpen))
+            onLayawayOpened()
+        }
+    }
 
     NavHost(navController = navController, startDestination = LayawayListRoute) {
         composable<LayawayListRoute> {

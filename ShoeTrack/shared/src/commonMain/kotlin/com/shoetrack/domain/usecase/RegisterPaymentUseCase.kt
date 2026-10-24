@@ -14,6 +14,7 @@ class RegisterPaymentUseCase(
     private val idGenerator: IdGenerator,
     private val clock: Clock,
     private val deviceId: String,
+    private val scheduleReminder: ScheduleOverdueReminderUseCase,
 ) {
 
     suspend operator fun invoke(layawayId: String, amount: Money): Layaway {
@@ -31,6 +32,7 @@ class RegisterPaymentUseCase(
 
         val updated = processPayment(layaway, payment)
         layawayRepository.registerPayment(updated, payment)
+        scheduleReminder(layaway.id)
         return updated
     }
 }

@@ -26,6 +26,7 @@ class StartLayawayUseCase(
     private val layawayRepository: LayawayRepository,
     private val createLayaway: CreateLayawayUseCase,
     private val registerPayment: RegisterPaymentUseCase,
+    private val scheduleReminder: ScheduleOverdueReminderUseCase,
     private val idGenerator: IdGenerator,
     private val clock: Clock,
 ) {
@@ -54,6 +55,7 @@ class StartLayawayUseCase(
         customerRepository.save(customer)
         productRepository.save(product)
         layawayRepository.create(layaway)
+        scheduleReminder(layaway.id)
 
         return if (request.initialPayment.isPositive) {
             registerPayment(layaway.id, request.initialPayment)

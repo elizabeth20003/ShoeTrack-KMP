@@ -34,4 +34,7 @@
     <string name="take_photo">Tomar foto</string>
     <string name="choose_photo">Elegir foto</string>
     <string name="error_photo_failed">No se pudo guardar la foto. Inténtalo de nuevo.</string>
+    <string name="notification_channel_name">Apartados en mora</string>
+    <string name="notification_overdue_title">Apartado en mora</string>
+    <string name="notification_overdue_body">%1$s no ha abonado a %2$s. Saldo: %3$s</string>
 </resources>

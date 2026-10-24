@@ -5,6 +5,7 @@ import com.shoetrack.domain.fakes.FakeLayawayRepository
 import com.shoetrack.domain.fakes.FakeProductRepository
 import com.shoetrack.domain.fakes.FixedClock
 import com.shoetrack.domain.fakes.SequentialIdGenerator
+import com.shoetrack.domain.fakes.scheduleReminderOf
 import com.shoetrack.domain.model.Customer
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
@@ -55,6 +56,7 @@ class LayawayDetailViewModelTest : MainDispatcherTest() {
             idGenerator = SequentialIdGenerator(),
             clock = FixedClock(now),
             deviceId = "device-1",
+            scheduleReminder = scheduleReminderOf(layaways, customers, products),
         ),
     )
 

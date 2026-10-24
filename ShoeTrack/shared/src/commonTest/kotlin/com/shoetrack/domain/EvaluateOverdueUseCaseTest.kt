@@ -3,6 +3,7 @@ package com.shoetrack.domain
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Money
+import com.shoetrack.domain.model.OverduePolicy
 import com.shoetrack.domain.usecase.EvaluateOverdueUseCase
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,7 +12,7 @@ import kotlin.time.Instant
 
 class EvaluateOverdueUseCaseTest {
 
-    private val evaluateOverdue = EvaluateOverdueUseCase(overdueAfterDays = 30)
+    private val evaluateOverdue = EvaluateOverdueUseCase(OverduePolicy(overdueAfterDays = 30))
     private val lastPaymentAt = Instant.parse("2026-01-01T00:00:00Z")
 
     private fun layaway(state: LayawayState) = Layaway(

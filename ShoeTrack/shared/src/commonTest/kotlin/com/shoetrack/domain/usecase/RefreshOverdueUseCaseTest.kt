@@ -5,6 +5,7 @@ import com.shoetrack.domain.fakes.FixedClock
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Money
+import com.shoetrack.domain.model.OverduePolicy
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +18,7 @@ class RefreshOverdueUseCaseTest {
     private val repository = FakeLayawayRepository()
     private val refreshOverdue = RefreshOverdueUseCase(
         layawayRepository = repository,
-        evaluateOverdue = EvaluateOverdueUseCase(overdueAfterDays = 30),
+        evaluateOverdue = EvaluateOverdueUseCase(OverduePolicy(overdueAfterDays = 30)),
         clock = FixedClock(today),
     )
 
@@ -40,7 +41,7 @@ class RefreshOverdueUseCaseTest {
 
         val changed = refreshOverdue()
 
-        assertEquals(1, changed)
+        assertEquals(listOf("old"), changed.map { it.id })
         assertEquals(LayawayState.Overdue, repository.layaways["old"]?.state)
         assertEquals(LayawayState.Active, repository.layaways["recent"]?.state)
     }
@@ -49,7 +50,7 @@ class RefreshOverdueUseCaseTest {
     fun ignoresLayawaysThatAreNotActive() = runTest {
         store("done", today - 90.days, LayawayState.Completed)
 
-        assertEquals(0, refreshOverdue())
+        assertEquals(emptyList(), refreshOverdue())
         assertEquals(LayawayState.Completed, repository.layaways["done"]?.state)
     }
 }

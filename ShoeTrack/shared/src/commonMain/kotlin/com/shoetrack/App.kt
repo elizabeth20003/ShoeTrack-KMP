@@ -10,11 +10,14 @@ import com.shoetrack.presentation.photo.LocalLoadPhoto
 import org.koin.mp.KoinPlatform
 
 @Composable
-fun App() {
+fun App(
+    layawayToOpen: String? = null,
+    onLayawayOpened: () -> Unit = {},
+) {
     val loadPhoto = remember { KoinPlatform.getKoin().get<LoadPhotoUseCase>() }
     CompositionLocalProvider(LocalLoadPhoto provides loadPhoto) {
         MaterialTheme {
-            AppNavigation()
+            AppNavigation(layawayToOpen, onLayawayOpened)
         }
     }
 }

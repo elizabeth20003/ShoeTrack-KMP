@@ -7,10 +7,12 @@ import com.shoetrack.data.repository.CustomerRepositoryImpl
 import com.shoetrack.data.repository.LayawayRepositoryImpl
 import com.shoetrack.data.repository.ProductRepositoryImpl
 import com.shoetrack.db.ShoeTrackDatabase
+import com.shoetrack.domain.model.OverduePolicy
 import com.shoetrack.domain.repository.CustomerRepository
 import com.shoetrack.domain.repository.LayawayRepository
 import com.shoetrack.domain.repository.ProductRepository
 import com.shoetrack.domain.service.IdGenerator
+import com.shoetrack.domain.service.OverdueReminderScheduler
 import com.shoetrack.domain.service.PhotoStorage
 import com.shoetrack.domain.usecase.CreateLayawayUseCase
 import com.shoetrack.domain.usecase.EvaluateOverdueUseCase
@@ -20,6 +22,7 @@ import com.shoetrack.domain.usecase.LoadPhotoUseCase
 import com.shoetrack.domain.usecase.ProcessPaymentUseCase
 import com.shoetrack.domain.usecase.RefreshOverdueUseCase
 import com.shoetrack.domain.usecase.RegisterPaymentUseCase
+import com.shoetrack.domain.usecase.ScheduleOverdueReminderUseCase
 import com.shoetrack.domain.usecase.SavePhotoUseCase
 import com.shoetrack.domain.usecase.StartLayawayUseCase
 import org.koin.core.context.startKoin
@@ -31,9 +34,18 @@ private fun domainModule(deviceId: String): Module = module {
     single<Clock> { Clock.System }
     single<IdGenerator> { UuidIdGenerator() }
 
+    single { OverduePolicy() }
+
     factory { CreateLayawayUseCase() }
     factory { ProcessPaymentUseCase() }
-    factory { EvaluateOverdueUseCase() }
+    factory { EvaluateOverdueUseCase(policy = get()) }
+    factory {
+        ScheduleOverdueReminderUseCase(
+            getLayawayDetail = get(),
+            scheduler = get(),
+            policy = get(),
+        )
+    }
 
     factory {
         RegisterPaymentUseCase(
@@ -42,6 +54,7 @@ private fun domainModule(deviceId: String): Module = module {
             idGenerator = get(),
             clock = get(),
             deviceId = deviceId,
+            scheduleReminder = get(),
         )
     }
     factory {
@@ -51,6 +64,7 @@ private fun domainModule(deviceId: String): Module = module {
             layawayRepository = get(),
             createLayaway = get(),
             registerPayment = get(),
+            scheduleReminder = get(),
             idGenerator = get(),
             clock = get(),
         )
@@ -82,8 +96,17 @@ private fun dataModule(
     }
 }
 
-fun initKoin(driverFactory: DatabaseDriverFactory, photosDirectory: String, deviceId: String) {
+fun initKoin(
+    driverFactory: DatabaseDriverFactory,
+    reminderScheduler: OverdueReminderScheduler,
+    photosDirectory: String,
+    deviceId: String,
+) {
     startKoin {
-        modules(domainModule(deviceId), dataModule(driverFactory, photosDirectory, deviceId))
+        modules(
+            domainModule(deviceId),
+            dataModule(driverFactory, photosDirectory, deviceId),
+            module { single<OverdueReminderScheduler> { reminderScheduler } },
+        )
     }
 }

@@ -4,13 +4,18 @@ import com.shoetrack.domain.model.Customer
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.LayawaySummary
+import com.shoetrack.domain.model.OverdueReminder
+import com.shoetrack.domain.model.OverduePolicy
 import com.shoetrack.domain.model.Payment
 import com.shoetrack.domain.model.Product
 import com.shoetrack.domain.repository.CustomerRepository
 import com.shoetrack.domain.repository.LayawayRepository
 import com.shoetrack.domain.repository.ProductRepository
 import com.shoetrack.domain.service.IdGenerator
+import com.shoetrack.domain.service.OverdueReminderScheduler
 import com.shoetrack.domain.service.PhotoStorage
+import com.shoetrack.domain.usecase.GetLayawayDetailUseCase
+import com.shoetrack.domain.usecase.ScheduleOverdueReminderUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -114,3 +119,26 @@ class SequentialIdGenerator : IdGenerator {
 class FixedClock(private val instant: Instant) : Clock {
     override fun now(): Instant = instant
 }
+
+class FakeOverdueReminderScheduler : OverdueReminderScheduler {
+    val scheduled = mutableMapOf<String, OverdueReminder>()
+
+    override fun schedule(reminder: OverdueReminder) {
+        scheduled[reminder.layawayId] = reminder
+    }
+
+    override fun cancel(layawayId: String) {
+        scheduled.remove(layawayId)
+    }
+}
+
+fun scheduleReminderOf(
+    layaways: FakeLayawayRepository,
+    customers: FakeCustomerRepository,
+    products: FakeProductRepository,
+    scheduler: OverdueReminderScheduler = FakeOverdueReminderScheduler(),
+) = ScheduleOverdueReminderUseCase(
+    getLayawayDetail = GetLayawayDetailUseCase(layaways, customers, products),
+    scheduler = scheduler,
+    policy = OverduePolicy(),
+)

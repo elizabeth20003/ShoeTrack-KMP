@@ -6,6 +6,7 @@ import com.shoetrack.domain.fakes.FakePhotoStorage
 import com.shoetrack.domain.fakes.FakeProductRepository
 import com.shoetrack.domain.fakes.FixedClock
 import com.shoetrack.domain.fakes.SequentialIdGenerator
+import com.shoetrack.domain.fakes.scheduleReminderOf
 import com.shoetrack.domain.usecase.CreateLayawayUseCase
 import com.shoetrack.domain.usecase.ProcessPaymentUseCase
 import com.shoetrack.domain.usecase.RegisterPaymentUseCase
@@ -34,6 +35,7 @@ class NewLayawayViewModelTest : MainDispatcherTest() {
     private fun viewModel(): NewLayawayViewModel {
         val idGenerator = SequentialIdGenerator()
         val clock = FixedClock(Instant.parse("2026-02-01T00:00:00Z"))
+        val scheduleReminder = scheduleReminderOf(layaways, customers, products)
         return NewLayawayViewModel(
             StartLayawayUseCase(
                 customerRepository = customers,
@@ -46,7 +48,9 @@ class NewLayawayViewModelTest : MainDispatcherTest() {
                     idGenerator = idGenerator,
                     clock = clock,
                     deviceId = "device-1",
+                    scheduleReminder = scheduleReminder,
                 ),
+                scheduleReminder = scheduleReminder,
                 idGenerator = idGenerator,
                 clock = clock,
             ),

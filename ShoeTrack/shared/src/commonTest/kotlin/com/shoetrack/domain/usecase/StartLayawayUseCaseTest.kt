@@ -2,9 +2,11 @@ package com.shoetrack.domain.usecase
 
 import com.shoetrack.domain.fakes.FakeCustomerRepository
 import com.shoetrack.domain.fakes.FakeLayawayRepository
+import com.shoetrack.domain.fakes.FakeOverdueReminderScheduler
 import com.shoetrack.domain.fakes.FakeProductRepository
 import com.shoetrack.domain.fakes.FixedClock
 import com.shoetrack.domain.fakes.SequentialIdGenerator
+import com.shoetrack.domain.fakes.scheduleReminderOf
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Money
 import kotlinx.coroutines.test.runTest
@@ -21,6 +23,8 @@ class StartLayawayUseCaseTest {
     private val layaways = FakeLayawayRepository()
     private val idGenerator = SequentialIdGenerator()
     private val clock = FixedClock(now)
+    private val scheduler = FakeOverdueReminderScheduler()
+    private val scheduleReminder = scheduleReminderOf(layaways, customers, products, scheduler)
     private val startLayaway = StartLayawayUseCase(
         customerRepository = customers,
         productRepository = products,
@@ -32,7 +36,9 @@ class StartLayawayUseCaseTest {
             idGenerator = idGenerator,
             clock = clock,
             deviceId = "device-1",
+            scheduleReminder = scheduleReminder,
         ),
+        scheduleReminder = scheduleReminder,
         idGenerator = idGenerator,
         clock = clock,
     )
@@ -94,5 +100,20 @@ class StartLayawayUseCaseTest {
         }
 
         assertEquals(0, customers.customers.size)
+    }
+
+    @Test
+    fun schedulesAReminderForTheNewLayaway() = runTest {
+        val layaway = startLayaway(
+            NewLayaway(
+                customerName = "Ana Perez",
+                customerPhone = "3001234567",
+                productDescription = "Nike Air Force 42",
+                productPhotoPath = "",
+                productPrice = Money.fromUnits(100_000),
+            ),
+        )
+
+        assertEquals(setOf(layaway.id), scheduler.scheduled.keys)
     }
 }
