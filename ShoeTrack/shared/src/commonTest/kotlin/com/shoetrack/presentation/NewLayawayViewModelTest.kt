@@ -7,10 +7,12 @@ import com.shoetrack.domain.fakes.FakeProductRepository
 import com.shoetrack.domain.fakes.FixedClock
 import com.shoetrack.domain.fakes.SequentialIdGenerator
 import com.shoetrack.domain.fakes.scheduleReminderOf
+import com.shoetrack.domain.model.Customer
 import com.shoetrack.domain.usecase.CreateLayawayUseCase
 import com.shoetrack.domain.usecase.ProcessPaymentUseCase
 import com.shoetrack.domain.usecase.RegisterPaymentUseCase
 import com.shoetrack.domain.usecase.SavePhotoUseCase
+import com.shoetrack.domain.usecase.SearchCustomersUseCase
 import com.shoetrack.domain.usecase.StartLayawayUseCase
 import com.shoetrack.presentation.create.NewLayawayEvent
 import com.shoetrack.presentation.create.NewLayawayViewModel
@@ -55,6 +57,7 @@ class NewLayawayViewModelTest : MainDispatcherTest() {
                 clock = clock,
             ),
             SavePhotoUseCase(photos),
+            SearchCustomersUseCase(customers),
         )
     }
 
@@ -167,5 +170,42 @@ class NewLayawayViewModelTest : MainDispatcherTest() {
 
         assertTrue(viewModel.uiState.value.isInitialPaymentInvalid)
         assertTrue(layaways.layaways.isEmpty())
+    }
+
+    @Test
+    fun typingANameSuggestsRegisteredCustomers() = runTest {
+        customers.customers["c1"] = Customer("c1", "Ana Perez", "3001234567", Instant.parse("2026-01-01T00:00:00Z"))
+        val viewModel = viewModel()
+
+        viewModel.onCustomerNameChange("ana")
+
+        assertEquals(listOf("c1"), viewModel.uiState.value.customerSuggestions.map { it.id })
+    }
+
+    @Test
+    fun choosingASuggestionFillsTheCustomerAndSavingReusesIt() = runTest {
+        val registered = Customer("c1", "Ana Perez", "3001234567", Instant.parse("2026-01-01T00:00:00Z"))
+        customers.customers[registered.id] = registered
+        val viewModel = viewModel()
+        viewModel.fillValidForm()
+
+        viewModel.onCustomerSelected(registered)
+        viewModel.save()
+        viewModel.events.first()
+
+        assertEquals("3001234567", viewModel.uiState.value.customerPhone)
+        assertEquals(1, customers.customers.size)
+        assertEquals("c1", layaways.layaways.values.single().customerId)
+    }
+
+    @Test
+    fun editingTheNameAfterChoosingASuggestionForgetsTheSelection() = runTest {
+        val registered = Customer("c1", "Ana Perez", "3001234567", Instant.parse("2026-01-01T00:00:00Z"))
+        val viewModel = viewModel()
+        viewModel.onCustomerSelected(registered)
+
+        viewModel.onCustomerNameChange("Ana Maria")
+
+        assertNull(viewModel.uiState.value.selectedCustomerId)
     }
 }

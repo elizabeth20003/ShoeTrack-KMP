@@ -2,14 +2,17 @@ package com.shoetrack.presentation.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shoetrack.domain.model.Customer
 import com.shoetrack.domain.model.Money
 import com.shoetrack.domain.usecase.NewLayaway
 import com.shoetrack.domain.usecase.SavePhotoUseCase
+import com.shoetrack.domain.usecase.SearchCustomersUseCase
 import com.shoetrack.domain.usecase.StartLayawayUseCase
 import com.shoetrack.domain.validation.PhoneNumberRules
 import com.shoetrack.presentation.common.runCatchingExceptCancellation
 import com.shoetrack.presentation.format.MAX_MONEY_DIGITS
 import com.shoetrack.presentation.format.toMoneyOrNull
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +29,8 @@ data class NewLayawayUiState(
     val price: String = "",
     val initialPayment: String = "",
     val photoName: String? = null,
+    val customerSuggestions: List<Customer> = emptyList(),
+    val selectedCustomerId: String? = null,
     val isSaving: Boolean = false,
     val showValidation: Boolean = false,
 ) {
@@ -59,7 +64,10 @@ sealed interface NewLayawayEvent {
 class NewLayawayViewModel(
     private val startLayaway: StartLayawayUseCase,
     private val savePhoto: SavePhotoUseCase,
+    private val searchCustomers: SearchCustomersUseCase,
 ) : ViewModel() {
+
+    private var suggestionsJob: Job? = null
 
     private val _uiState = MutableStateFlow(NewLayawayUiState())
     val uiState: StateFlow<NewLayawayUiState> = _uiState.asStateFlow()
@@ -67,10 +75,31 @@ class NewLayawayViewModel(
     private val _events = Channel<NewLayawayEvent>(Channel.BUFFERED)
     val events: Flow<NewLayawayEvent> = _events.receiveAsFlow()
 
-    fun onCustomerNameChange(value: String) = _uiState.update { it.copy(customerName = value) }
+    fun onCustomerNameChange(value: String) {
+        _uiState.update { it.copy(customerName = value, selectedCustomerId = null) }
+        suggestionsJob?.cancel()
+        suggestionsJob = viewModelScope.launch {
+            val suggestions = runCatchingExceptCancellation { searchCustomers(value) }.getOrDefault(emptyList())
+            _uiState.update { it.copy(customerSuggestions = suggestions) }
+        }
+    }
 
     fun onCustomerPhoneChange(value: String) =
-        _uiState.update { it.copy(customerPhone = PhoneNumberRules.normalize(value).take(MAX_PHONE_DIGITS)) }
+        _uiState.update {
+            it.copy(customerPhone = PhoneNumberRules.normalize(value).take(MAX_PHONE_DIGITS), selectedCustomerId = null)
+        }
+
+    fun onCustomerSelected(customer: Customer) {
+        suggestionsJob?.cancel()
+        _uiState.update {
+            it.copy(
+                customerName = customer.name,
+                customerPhone = customer.phone,
+                selectedCustomerId = customer.id,
+                customerSuggestions = emptyList(),
+            )
+        }
+    }
 
     fun onProductDescriptionChange(value: String) =
         _uiState.update { it.copy(productDescription = value) }
@@ -109,6 +138,7 @@ class NewLayawayViewModel(
                         productPhotoPath = state.photoName.orEmpty(),
                         productPrice = price,
                         initialPayment = state.initialPayment.toMoneyOrNull() ?: Money.ZERO,
+                        existingCustomerId = state.selectedCustomerId,
                     ),
                 )
             }

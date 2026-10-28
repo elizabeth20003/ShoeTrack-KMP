@@ -7,6 +7,7 @@ import com.shoetrack.domain.fakes.FakeProductRepository
 import com.shoetrack.domain.fakes.FixedClock
 import com.shoetrack.domain.fakes.SequentialIdGenerator
 import com.shoetrack.domain.fakes.scheduleReminderOf
+import com.shoetrack.domain.model.Customer
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Money
 import kotlinx.coroutines.test.runTest
@@ -120,5 +121,23 @@ class StartLayawayUseCaseTest {
     @Test
     fun initialPaymentAbovePriceIsRejected() = runTest {
         assertFailsWith<IllegalArgumentException> { startLayaway(request(initialPayment = Money(100_001))) }
+    }
+
+    @Test
+    fun anExistingCustomerIsReusedInsteadOfCreatingANewOne() = runTest {
+        val registered = Customer("existing", "Ana Perez", "3001234567", now)
+        customers.customers[registered.id] = registered
+
+        val layaway = startLayaway(request().copy(existingCustomerId = "existing"))
+
+        assertEquals("existing", layaway.customerId)
+        assertEquals(1, customers.customers.size)
+    }
+
+    @Test
+    fun anUnknownExistingCustomerIsRejected() = runTest {
+        assertFailsWith<IllegalArgumentException> {
+            startLayaway(request().copy(existingCustomerId = "missing"))
+        }
     }
 }

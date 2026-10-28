@@ -18,6 +18,7 @@ import com.shoetrack.domain.repository.SyncRepository
 import com.shoetrack.domain.sync.LayawayMerger
 import com.shoetrack.domain.sync.SyncEngine
 import com.shoetrack.domain.usecase.MergeSnapshotUseCase
+import com.shoetrack.domain.usecase.SearchCustomersUseCase
 import com.shoetrack.domain.service.IdGenerator
 import com.shoetrack.domain.service.OverdueReminderScheduler
 import com.shoetrack.domain.service.PhotoStorage
@@ -76,6 +77,7 @@ private fun domainModule(deviceId: String): Module = module {
             clock = get(),
         )
     }
+    factory { SearchCustomersUseCase(customerRepository = get()) }
     single { LayawayMerger() }
     factory {
         MergeSnapshotUseCase(

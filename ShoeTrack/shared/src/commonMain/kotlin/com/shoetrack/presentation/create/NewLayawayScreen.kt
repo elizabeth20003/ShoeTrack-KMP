@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.shoetrack.domain.model.Customer
 import com.shoetrack.presentation.photo.ShoePhoto
 import com.shoetrack.presentation.photo.rememberPhotoPicker
 import org.jetbrains.compose.resources.getString
@@ -42,6 +44,8 @@ import shoetrack.shared.generated.resources.choose_photo
 import shoetrack.shared.generated.resources.customer_name
 import shoetrack.shared.generated.resources.customer_phone
 import shoetrack.shared.generated.resources.error_photo_failed
+import shoetrack.shared.generated.resources.existing_customer
+import shoetrack.shared.generated.resources.is_existing_customer
 import shoetrack.shared.generated.resources.error_save_failed
 import shoetrack.shared.generated.resources.initial_payment
 import shoetrack.shared.generated.resources.initial_payment_exceeds_price
@@ -81,6 +85,7 @@ fun NewLayawayScreen(
         snackbarHostState = snackbarHostState,
         onBack = onBack,
         onCustomerNameChange = viewModel::onCustomerNameChange,
+        onCustomerSelected = viewModel::onCustomerSelected,
         onCustomerPhoneChange = viewModel::onCustomerPhoneChange,
         onProductDescriptionChange = viewModel::onProductDescriptionChange,
         onPriceChange = viewModel::onPriceChange,
@@ -98,6 +103,7 @@ internal fun NewLayawayContent(
     snackbarHostState: SnackbarHostState,
     onBack: () -> Unit,
     onCustomerNameChange: (String) -> Unit,
+    onCustomerSelected: (Customer) -> Unit,
     onCustomerPhoneChange: (String) -> Unit,
     onProductDescriptionChange: (String) -> Unit,
     onPriceChange: (String) -> Unit,
@@ -135,6 +141,11 @@ internal fun NewLayawayContent(
                 value = uiState.customerName,
                 onValueChange = onCustomerNameChange,
                 errorMessage = if (uiState.isCustomerNameInvalid) stringResource(Res.string.required_field) else null,
+            )
+            CustomerSuggestions(
+                suggestions = uiState.customerSuggestions,
+                isExistingCustomerSelected = uiState.selectedCustomerId != null,
+                onSelected = onCustomerSelected,
             )
             FormField(
                 label = stringResource(Res.string.customer_phone),
@@ -199,6 +210,40 @@ private fun PhotoSection(photoName: String?, onTakePhoto: () -> Unit, onPickPhot
 }
 
 @Composable
+private fun CustomerSuggestions(
+    suggestions: List<Customer>,
+    isExistingCustomerSelected: Boolean,
+    onSelected: (Customer) -> Unit,
+) {
+    if (isExistingCustomerSelected) {
+        Text(
+            text = stringResource(Res.string.existing_customer),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+    if (suggestions.isNotEmpty()) {
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column {
+                Text(
+                    text = stringResource(Res.string.is_existing_customer),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp),
+                )
+                suggestions.forEach { customer ->
+                    TextButton(onClick = { onSelected(customer) }, modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "${customer.name} · ${customer.phone}",
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun FormField(
     label: String,
     value: String,
@@ -227,6 +272,7 @@ private fun NewLayawayContentPreview() {
             snackbarHostState = remember { SnackbarHostState() },
             onBack = {},
             onCustomerNameChange = {},
+            onCustomerSelected = {},
             onCustomerPhoneChange = {},
             onProductDescriptionChange = {},
             onPriceChange = {},

@@ -47,4 +47,6 @@
     <string name="sync_nearby_synced">%1$d dispositivos cerca · sincronizado a las %2$s</string>
     <string name="sync_in_progress">Sincronizando…</string>
     <string name="sync_failed">Error al sincronizar, reintentando</string>
+    <string name="is_existing_customer">¿Es un cliente ya registrado?</string>
+    <string name="existing_customer">Cliente registrado</string>
 </resources>

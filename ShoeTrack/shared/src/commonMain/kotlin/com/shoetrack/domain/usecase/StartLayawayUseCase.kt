@@ -18,6 +18,8 @@ data class NewLayaway(
     val productPhotoPath: String,
     val productPrice: Money,
     val initialPayment: Money = Money.ZERO,
+    /** Set when the layaway belongs to a customer already registered; no new customer is created. */
+    val existingCustomerId: String? = null,
 )
 
 class StartLayawayUseCase(
@@ -41,7 +43,10 @@ class StartLayawayUseCase(
         require(request.initialPayment >= Money.ZERO) { "The initial payment cannot be negative" }
 
         val now = clock.now()
-        val customer = Customer(
+        val existingCustomer = request.existingCustomerId?.let { id ->
+            requireNotNull(customerRepository.getById(id)) { "Customer $id does not exist" }
+        }
+        val customer = existingCustomer ?: Customer(
             id = idGenerator.newId(),
             name = request.customerName.trim(),
             phone = PhoneNumberRules.normalize(request.customerPhone),
@@ -55,7 +60,7 @@ class StartLayawayUseCase(
         )
         val layaway = createLayaway(idGenerator.newId(), customer.id, product, now)
 
-        customerRepository.save(customer)
+        if (existingCustomer == null) customerRepository.save(customer)
         productRepository.save(product)
         layawayRepository.create(layaway)
         scheduleReminder(layaway.id)
