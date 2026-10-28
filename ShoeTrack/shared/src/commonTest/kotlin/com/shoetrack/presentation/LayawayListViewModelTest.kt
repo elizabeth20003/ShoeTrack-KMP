@@ -1,6 +1,7 @@
 package com.shoetrack.presentation
 
 import com.shoetrack.domain.fakes.FakeLayawayRepository
+import com.shoetrack.domain.fakes.FakeSyncEngine
 import com.shoetrack.domain.fakes.FixedClock
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
@@ -26,6 +27,7 @@ class LayawayListViewModelTest : MainDispatcherTest() {
     private fun viewModel() = LayawayListViewModel(
         observeLayaways = ObserveLayawaysUseCase(layaways),
         refreshOverdue = RefreshOverdueUseCase(layaways, EvaluateOverdueUseCase(), FixedClock(today)),
+        syncEngine = FakeSyncEngine(),
     )
 
     private fun store(

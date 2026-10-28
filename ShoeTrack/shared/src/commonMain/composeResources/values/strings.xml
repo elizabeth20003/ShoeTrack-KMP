@@ -42,4 +42,9 @@
     <string name="clear">Clear</string>
     <string name="payment_exceeds_balance">The payment cannot be more than the balance (%1$s)</string>
     <string name="initial_payment_exceeds_price">The initial payment cannot be more than the price</string>
+    <string name="sync_no_devices">No other devices nearby</string>
+    <string name="sync_nearby">%1$d nearby devices</string>
+    <string name="sync_nearby_synced">%1$d nearby devices · synced at %2$s</string>
+    <string name="sync_in_progress">Syncing…</string>
+    <string name="sync_failed">Sync failed, retrying</string>
 </resources>

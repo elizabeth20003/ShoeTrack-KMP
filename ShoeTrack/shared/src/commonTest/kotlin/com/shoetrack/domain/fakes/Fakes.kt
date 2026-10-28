@@ -16,9 +16,13 @@ import com.shoetrack.domain.repository.SyncRepository
 import com.shoetrack.domain.service.IdGenerator
 import com.shoetrack.domain.service.OverdueReminderScheduler
 import com.shoetrack.domain.service.PhotoStorage
+import com.shoetrack.domain.sync.SyncEngine
+import com.shoetrack.domain.sync.SyncStatus
 import com.shoetrack.domain.usecase.GetLayawayDetailUseCase
 import com.shoetrack.domain.usecase.ScheduleOverdueReminderUseCase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlin.time.Clock
@@ -169,4 +173,12 @@ class FakeSyncRepository(
         changes.products.forEach { products.products.getOrPut(it.id) { it } }
         changes.layaways.forEach { layaways.layaways[it.id] = it }
     }
+}
+
+class FakeSyncEngine : SyncEngine {
+    override val status: StateFlow<SyncStatus> = MutableStateFlow(SyncStatus())
+
+    override fun start() = Unit
+
+    override fun stop() = Unit
 }

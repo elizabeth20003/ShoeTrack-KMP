@@ -32,7 +32,7 @@ fun AppNavigation(
 
     NavHost(navController = navController, startDestination = LayawayListRoute) {
         composable<LayawayListRoute> {
-            val viewModel = viewModel { LayawayListViewModel(koin.get(), koin.get()) }
+            val viewModel = viewModel { LayawayListViewModel(koin.get(), koin.get(), koin.get()) }
             LayawayListScreen(
                 viewModel = viewModel,
                 onNewLayaway = { navController.navigate(NewLayawayRoute) },

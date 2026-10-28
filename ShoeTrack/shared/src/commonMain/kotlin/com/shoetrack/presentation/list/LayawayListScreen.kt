@@ -34,10 +34,12 @@ import androidx.compose.ui.unit.dp
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.LayawaySummary
 import com.shoetrack.domain.model.Money
+import com.shoetrack.domain.sync.SyncStatus
 import com.shoetrack.presentation.common.color
 import com.shoetrack.presentation.common.label
 import com.shoetrack.presentation.format.format
 import com.shoetrack.presentation.format.formatAsDate
+import com.shoetrack.presentation.format.formatAsTime
 import com.shoetrack.presentation.photo.ShoePhoto
 import org.jetbrains.compose.resources.stringResource
 import shoetrack.shared.generated.resources.Res
@@ -49,6 +51,11 @@ import shoetrack.shared.generated.resources.error_load_failed
 import shoetrack.shared.generated.resources.last_payment_label
 import shoetrack.shared.generated.resources.layaways_title
 import shoetrack.shared.generated.resources.new_layaway
+import shoetrack.shared.generated.resources.sync_failed
+import shoetrack.shared.generated.resources.sync_in_progress
+import shoetrack.shared.generated.resources.sync_nearby
+import shoetrack.shared.generated.resources.sync_nearby_synced
+import shoetrack.shared.generated.resources.sync_no_devices
 import shoetrack.shared.generated.resources.no_results
 import shoetrack.shared.generated.resources.search_hint
 import kotlin.time.Instant
@@ -61,7 +68,8 @@ fun LayawayListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val query by viewModel.query.collectAsState()
-    LayawayListContent(uiState, query, viewModel::onQueryChange, onNewLayaway, onOpenLayaway)
+    val syncStatus by viewModel.syncStatus.collectAsState()
+    LayawayListContent(uiState, query, syncStatus, viewModel::onQueryChange, onNewLayaway, onOpenLayaway)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,6 +77,7 @@ fun LayawayListScreen(
 internal fun LayawayListContent(
     uiState: LayawayListUiState,
     query: String,
+    syncStatus: SyncStatus,
     onQueryChange: (String) -> Unit,
     onNewLayaway: () -> Unit,
     onOpenLayaway: (String) -> Unit,
@@ -83,36 +92,56 @@ internal fun LayawayListContent(
             }
         },
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when (uiState) {
-                LayawayListUiState.Loading ->
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            SyncStatusLine(syncStatus)
+            Box(modifier = Modifier.fillMaxSize()) {
+                when (uiState) {
+                    LayawayListUiState.Loading ->
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
 
-                LayawayListUiState.Error ->
-                    Text(
-                        text = stringResource(Res.string.error_load_failed),
-                        modifier = Modifier.align(Alignment.Center).padding(32.dp),
-                    )
-
-                is LayawayListUiState.Loaded ->
-                    if (!uiState.hasAnyLayaways) {
-                        EmptyState(
-                            title = stringResource(Res.string.empty_title),
-                            message = stringResource(Res.string.empty_message),
+                    LayawayListUiState.Error ->
+                        Text(
+                            text = stringResource(Res.string.error_load_failed),
+                            modifier = Modifier.align(Alignment.Center).padding(32.dp),
                         )
-                    } else {
-                        Column {
-                            SearchField(query, onQueryChange)
-                            if (uiState.layaways.isEmpty()) {
-                                EmptyState(title = stringResource(Res.string.no_results), message = null)
-                            } else {
-                                LayawayList(uiState.layaways, onOpenLayaway)
+
+                    is LayawayListUiState.Loaded ->
+                        if (!uiState.hasAnyLayaways) {
+                            EmptyState(
+                                title = stringResource(Res.string.empty_title),
+                                message = stringResource(Res.string.empty_message),
+                            )
+                        } else {
+                            Column {
+                                SearchField(query, onQueryChange)
+                                if (uiState.layaways.isEmpty()) {
+                                    EmptyState(title = stringResource(Res.string.no_results), message = null)
+                                } else {
+                                    LayawayList(uiState.layaways, onOpenLayaway)
+                                }
                             }
                         }
-                    }
+                }
             }
         }
     }
+}
+
+@Composable
+private fun SyncStatusLine(status: SyncStatus) {
+    val text = when {
+        status.hasFailed -> stringResource(Res.string.sync_failed)
+        status.isSyncing -> stringResource(Res.string.sync_in_progress)
+        status.nearbyDevices == 0 -> stringResource(Res.string.sync_no_devices)
+        status.lastSyncAt == null -> stringResource(Res.string.sync_nearby, status.nearbyDevices)
+        else -> stringResource(Res.string.sync_nearby_synced, status.nearbyDevices, status.lastSyncAt.formatAsTime())
+    }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+    )
 }
 
 @Composable
@@ -232,6 +261,7 @@ private fun LayawayListContentPreview() {
         LayawayListContent(
             uiState = LayawayListUiState.Loaded(samples, hasAnyLayaways = true),
             query = "",
+            syncStatus = SyncStatus(nearbyDevices = 1, lastSyncAt = Instant.parse("2026-10-01T10:30:00Z")),
             onQueryChange = {},
             onNewLayaway = {},
             onOpenLayaway = {},

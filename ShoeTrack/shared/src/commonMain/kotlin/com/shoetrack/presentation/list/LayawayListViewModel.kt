@@ -3,6 +3,8 @@ package com.shoetrack.presentation.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shoetrack.domain.model.LayawaySummary
+import com.shoetrack.domain.sync.SyncEngine
+import com.shoetrack.domain.sync.SyncStatus
 import com.shoetrack.domain.usecase.ObserveLayawaysUseCase
 import com.shoetrack.domain.usecase.RefreshOverdueUseCase
 import com.shoetrack.presentation.common.runCatchingExceptCancellation
@@ -28,7 +30,10 @@ sealed interface LayawayListUiState {
 class LayawayListViewModel(
     observeLayaways: ObserveLayawaysUseCase,
     private val refreshOverdue: RefreshOverdueUseCase,
+    syncEngine: SyncEngine,
 ) : ViewModel() {
+
+    val syncStatus: StateFlow<SyncStatus> = syncEngine.status
 
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()

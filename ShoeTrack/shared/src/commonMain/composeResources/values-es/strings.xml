@@ -42,4 +42,9 @@
     <string name="clear">Borrar</string>
     <string name="payment_exceeds_balance">El abono no puede ser mayor que el saldo (%1$s)</string>
     <string name="initial_payment_exceeds_price">El abono inicial no puede ser mayor que el precio</string>
+    <string name="sync_no_devices">No hay otros dispositivos cerca</string>
+    <string name="sync_nearby">%1$d dispositivos cerca</string>
+    <string name="sync_nearby_synced">%1$d dispositivos cerca · sincronizado a las %2$s</string>
+    <string name="sync_in_progress">Sincronizando…</string>
+    <string name="sync_failed">Error al sincronizar, reintentando</string>
 </resources>
