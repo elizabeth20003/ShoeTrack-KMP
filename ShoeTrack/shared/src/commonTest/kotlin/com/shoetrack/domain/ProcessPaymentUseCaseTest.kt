@@ -1,5 +1,6 @@
 package com.shoetrack.domain
 
+import com.shoetrack.domain.error.PaymentExceedsBalanceException
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Money
@@ -53,10 +54,10 @@ class ProcessPaymentUseCaseTest {
     }
 
     @Test
-    fun paymentAboveBalanceAlsoCompletesLayaway() {
-        val result = processPayment(layaway(balance = 3_000), payment(5_000))
-
-        assertEquals(LayawayState.Completed, result.state)
+    fun paymentAboveBalanceIsRejected() {
+        assertFailsWith<PaymentExceedsBalanceException> {
+            processPayment(layaway(balance = 3_000), payment(5_000))
+        }
     }
 
     @Test

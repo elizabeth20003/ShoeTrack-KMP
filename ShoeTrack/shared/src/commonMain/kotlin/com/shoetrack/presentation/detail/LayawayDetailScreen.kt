@@ -65,6 +65,7 @@ import shoetrack.shared.generated.resources.layaway_details_title
 import shoetrack.shared.generated.resources.layaway_not_found
 import shoetrack.shared.generated.resources.no_payments
 import shoetrack.shared.generated.resources.payment_amount
+import shoetrack.shared.generated.resources.payment_exceeds_balance
 import shoetrack.shared.generated.resources.payments_title
 import shoetrack.shared.generated.resources.total_price_label
 import kotlin.time.Instant
@@ -135,6 +136,7 @@ internal fun LayawayDetailContent(
         PaymentDialog(
             input = uiState.paymentInput,
             canConfirm = uiState.canConfirmPayment,
+            maxAmount = uiState.detail?.layaway?.remainingBalance?.format().takeIf { uiState.isPaymentTooHigh },
             onInputChange = onPaymentInputChange,
             onConfirm = onConfirmPayment,
             onDismiss = onDismissPayment,
@@ -221,6 +223,7 @@ private fun DetailBody(detail: LayawayDetail, onAddPayment: () -> Unit) {
 private fun PaymentDialog(
     input: String,
     canConfirm: Boolean,
+    maxAmount: String?,
     onInputChange: (String) -> Unit,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
@@ -235,6 +238,10 @@ private fun PaymentDialog(
                 label = { Text(stringResource(Res.string.payment_amount)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = maxAmount != null,
+                supportingText = maxAmount?.let { max ->
+                    { Text(stringResource(Res.string.payment_exceeds_balance, max)) }
+                },
             )
         },
         confirmButton = {

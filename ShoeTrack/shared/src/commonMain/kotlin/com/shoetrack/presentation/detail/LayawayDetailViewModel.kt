@@ -26,8 +26,15 @@ data class LayawayDetailUiState(
     val paymentInput: String = "",
     val isSubmittingPayment: Boolean = false,
 ) {
+    val isPaymentTooHigh: Boolean
+        get() {
+            val amount = paymentInput.toMoneyOrNull() ?: return false
+            val balance = detail?.layaway?.remainingBalance ?: return false
+            return amount > balance
+        }
+
     val canConfirmPayment: Boolean
-        get() = !isSubmittingPayment && paymentInput.toMoneyOrNull()?.isPositive == true
+        get() = !isSubmittingPayment && !isPaymentTooHigh && paymentInput.toMoneyOrNull()?.isPositive == true
 }
 
 sealed interface LayawayDetailEvent {

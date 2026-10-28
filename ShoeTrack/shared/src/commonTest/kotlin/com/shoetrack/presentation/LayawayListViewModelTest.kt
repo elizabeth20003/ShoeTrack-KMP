@@ -28,11 +28,16 @@ class LayawayListViewModelTest : MainDispatcherTest() {
         refreshOverdue = RefreshOverdueUseCase(layaways, EvaluateOverdueUseCase(), FixedClock(today)),
     )
 
-    private fun store(id: String, lastPaymentAt: Instant) {
+    private fun store(
+        id: String,
+        lastPaymentAt: Instant,
+        customerId: String = "customer-1",
+        productId: String = "product-1",
+    ) {
         layaways.layaways[id] = Layaway(
             id = id,
-            customerId = "customer-1",
-            productId = "product-1",
+            customerId = customerId,
+            productId = productId,
             remainingBalance = Money(10_000),
             state = LayawayState.Active,
             createdAt = lastPaymentAt,
@@ -47,6 +52,29 @@ class LayawayListViewModelTest : MainDispatcherTest() {
         val state = viewModel().uiState.first { it !is LayawayListUiState.Loading }
 
         assertEquals(1, assertIs<LayawayListUiState.Loaded>(state).layaways.size)
+    }
+
+    @Test
+    fun searchKeepsOnlyTheLayawaysOfThatCustomer() = runTest {
+        store("1", today, customerId = "Ana Perez")
+        store("2", today, customerId = "Luis Gomez")
+        val viewModel = viewModel()
+
+        viewModel.onQueryChange("ana")
+        val state = viewModel.uiState.first { it is LayawayListUiState.Loaded && it.layaways.size == 1 }
+
+        assertEquals(listOf("1"), assertIs<LayawayListUiState.Loaded>(state).layaways.map { it.id })
+    }
+
+    @Test
+    fun anEmptySearchIsNotTheSameAsAnEmptyStore() = runTest {
+        store("1", today, customerId = "Ana Perez")
+        val viewModel = viewModel()
+
+        viewModel.onQueryChange("zzz")
+        val state = viewModel.uiState.first { it is LayawayListUiState.Loaded && it.layaways.isEmpty() }
+
+        assertEquals(true, assertIs<LayawayListUiState.Loaded>(state).hasAnyLayaways)
     }
 
     @Test

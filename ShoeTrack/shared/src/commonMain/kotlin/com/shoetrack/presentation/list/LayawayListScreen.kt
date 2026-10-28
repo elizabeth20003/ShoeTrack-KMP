@@ -18,8 +18,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,12 +42,15 @@ import com.shoetrack.presentation.photo.ShoePhoto
 import org.jetbrains.compose.resources.stringResource
 import shoetrack.shared.generated.resources.Res
 import shoetrack.shared.generated.resources.balance_label
+import shoetrack.shared.generated.resources.clear
 import shoetrack.shared.generated.resources.empty_message
 import shoetrack.shared.generated.resources.empty_title
 import shoetrack.shared.generated.resources.error_load_failed
 import shoetrack.shared.generated.resources.last_payment_label
 import shoetrack.shared.generated.resources.layaways_title
 import shoetrack.shared.generated.resources.new_layaway
+import shoetrack.shared.generated.resources.no_results
+import shoetrack.shared.generated.resources.search_hint
 import kotlin.time.Instant
 
 @Composable
@@ -55,13 +60,16 @@ fun LayawayListScreen(
     onOpenLayaway: (String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    LayawayListContent(uiState, onNewLayaway, onOpenLayaway)
+    val query by viewModel.query.collectAsState()
+    LayawayListContent(uiState, query, viewModel::onQueryChange, onNewLayaway, onOpenLayaway)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun LayawayListContent(
     uiState: LayawayListUiState,
+    query: String,
+    onQueryChange: (String) -> Unit,
     onNewLayaway: () -> Unit,
     onOpenLayaway: (String) -> Unit,
 ) {
@@ -87,10 +95,20 @@ internal fun LayawayListContent(
                     )
 
                 is LayawayListUiState.Loaded ->
-                    if (uiState.layaways.isEmpty()) {
-                        EmptyState()
+                    if (!uiState.hasAnyLayaways) {
+                        EmptyState(
+                            title = stringResource(Res.string.empty_title),
+                            message = stringResource(Res.string.empty_message),
+                        )
                     } else {
-                        LayawayList(uiState.layaways, onOpenLayaway)
+                        Column {
+                            SearchField(query, onQueryChange)
+                            if (uiState.layaways.isEmpty()) {
+                                EmptyState(title = stringResource(Res.string.no_results), message = null)
+                            } else {
+                                LayawayList(uiState.layaways, onOpenLayaway)
+                            }
+                        }
                     }
             }
         }
@@ -160,14 +178,30 @@ private fun LayawayCardText(layaway: LayawaySummary, modifier: Modifier = Modifi
 }
 
 @Composable
-private fun EmptyState() {
+private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        label = { Text(stringResource(Res.string.search_hint)) },
+        singleLine = true,
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                TextButton(onClick = { onQueryChange("") }) { Text(stringResource(Res.string.clear)) }
+            }
+        },
+        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 8.dp, end = 16.dp),
+    )
+}
+
+@Composable
+private fun EmptyState(title: String, message: String?) {
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(stringResource(Res.string.empty_title), style = MaterialTheme.typography.titleMedium)
-        Text(stringResource(Res.string.empty_message), style = MaterialTheme.typography.bodyMedium)
+        Text(title, style = MaterialTheme.typography.titleMedium)
+        message?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
     }
 }
 
@@ -195,6 +229,12 @@ private fun LayawayListContentPreview() {
         ),
     )
     MaterialTheme {
-        LayawayListContent(LayawayListUiState.Loaded(samples), onNewLayaway = {}, onOpenLayaway = {})
+        LayawayListContent(
+            uiState = LayawayListUiState.Loaded(samples, hasAnyLayaways = true),
+            query = "",
+            onQueryChange = {},
+            onNewLayaway = {},
+            onOpenLayaway = {},
+        )
     }
 }

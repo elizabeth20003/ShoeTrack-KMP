@@ -116,4 +116,25 @@ class LayawayDetailViewModelTest : MainDispatcherTest() {
         viewModel.onPaymentInputChange("500")
         assertTrue(viewModel.uiState.value.canConfirmPayment)
     }
+
+    @Test
+    fun aPaymentAboveTheBalanceCannotBeConfirmed() {
+        storeLayaway()
+        val viewModel = viewModel()
+
+        viewModel.onPaymentInputChange("100001")
+
+        assertTrue(viewModel.uiState.value.isPaymentTooHigh)
+        assertFalse(viewModel.uiState.value.canConfirmPayment)
+    }
+
+    @Test
+    fun aPaymentEqualToTheBalanceCanBeConfirmed() {
+        storeLayaway()
+        val viewModel = viewModel()
+
+        viewModel.onPaymentInputChange("100000")
+
+        assertTrue(viewModel.uiState.value.canConfirmPayment)
+    }
 }

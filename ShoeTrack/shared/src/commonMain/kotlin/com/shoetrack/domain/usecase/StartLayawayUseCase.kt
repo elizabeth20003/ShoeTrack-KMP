@@ -35,6 +35,9 @@ class StartLayawayUseCase(
         require(request.customerName.isNotBlank()) { "The customer name is required" }
         require(request.productDescription.isNotBlank()) { "The product description is required" }
         require(PhoneNumberRules.isValid(request.customerPhone)) { "The phone number is not valid" }
+        require(request.initialPayment <= request.productPrice) {
+            "The initial payment cannot be more than the price"
+        }
         require(request.initialPayment >= Money.ZERO) { "The initial payment cannot be negative" }
 
         val now = clock.now()

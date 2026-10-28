@@ -44,6 +44,7 @@ import shoetrack.shared.generated.resources.customer_phone
 import shoetrack.shared.generated.resources.error_photo_failed
 import shoetrack.shared.generated.resources.error_save_failed
 import shoetrack.shared.generated.resources.initial_payment
+import shoetrack.shared.generated.resources.initial_payment_exceeds_price
 import shoetrack.shared.generated.resources.invalid_phone
 import shoetrack.shared.generated.resources.new_layaway
 import shoetrack.shared.generated.resources.price
@@ -160,6 +161,11 @@ internal fun NewLayawayContent(
                 value = uiState.initialPayment,
                 onValueChange = onInitialPaymentChange,
                 keyboardType = KeyboardType.Number,
+                errorMessage = if (uiState.isInitialPaymentInvalid) {
+                    stringResource(Res.string.initial_payment_exceeds_price)
+                } else {
+                    null
+                },
             )
             Button(
                 onClick = onSave,

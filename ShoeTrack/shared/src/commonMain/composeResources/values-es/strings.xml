@@ -37,4 +37,9 @@
     <string name="notification_channel_name">Apartados en mora</string>
     <string name="notification_overdue_title">Apartado en mora</string>
     <string name="notification_overdue_body">%1$s no ha abonado a %2$s. Saldo: %3$s</string>
+    <string name="search_hint">Buscar por cliente o zapatos</string>
+    <string name="no_results">Ningún apartado coincide con la búsqueda</string>
+    <string name="clear">Borrar</string>
+    <string name="payment_exceeds_balance">El abono no puede ser mayor que el saldo (%1$s)</string>
+    <string name="initial_payment_exceeds_price">El abono inicial no puede ser mayor que el precio</string>
 </resources>

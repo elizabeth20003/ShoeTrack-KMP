@@ -34,8 +34,16 @@ data class NewLayawayUiState(
     val isProductDescriptionInvalid: Boolean get() = showValidation && productDescription.isBlank()
     val isPriceInvalid: Boolean get() = showValidation && price.toMoneyOrNull()?.isPositive != true
 
+    val isInitialPaymentInvalid: Boolean
+        get() {
+            val initial = initialPayment.toMoneyOrNull() ?: return false
+            val total = price.toMoneyOrNull() ?: return false
+            return initial > total
+        }
+
     val isValid: Boolean
-        get() = customerName.isNotBlank() &&
+        get() = !isInitialPaymentInvalid &&
+            customerName.isNotBlank() &&
             productDescription.isNotBlank() &&
             PhoneNumberRules.isValid(customerPhone) &&
             price.toMoneyOrNull()?.isPositive == true

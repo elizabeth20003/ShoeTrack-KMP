@@ -156,4 +156,16 @@ class NewLayawayViewModelTest : MainDispatcherTest() {
 
         assertEquals("125", viewModel.uiState.value.price)
     }
+
+    @Test
+    fun initialPaymentAbovePriceIsFlaggedAndBlocksSaving() = runTest {
+        val viewModel = viewModel()
+        viewModel.fillValidForm()
+        viewModel.onInitialPaymentChange("200000")
+
+        viewModel.save()
+
+        assertTrue(viewModel.uiState.value.isInitialPaymentInvalid)
+        assertTrue(layaways.layaways.isEmpty())
+    }
 }

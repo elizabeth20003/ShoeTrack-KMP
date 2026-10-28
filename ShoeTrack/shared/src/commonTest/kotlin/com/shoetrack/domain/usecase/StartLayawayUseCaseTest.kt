@@ -116,4 +116,9 @@ class StartLayawayUseCaseTest {
 
         assertEquals(setOf(layaway.id), scheduler.scheduled.keys)
     }
+
+    @Test
+    fun initialPaymentAbovePriceIsRejected() = runTest {
+        assertFailsWith<IllegalArgumentException> { startLayaway(request(initialPayment = Money(100_001))) }
+    }
 }

@@ -1,5 +1,6 @@
 package com.shoetrack.domain.usecase
 
+import com.shoetrack.domain.error.PaymentExceedsBalanceException
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Payment
@@ -12,6 +13,10 @@ class ProcessPaymentUseCase {
         }
         require(layaway.state !is LayawayState.Completed) {
             "The layaway is already completed"
+        }
+
+        if (payment.amount > layaway.remainingBalance) {
+            throw PaymentExceedsBalanceException(layaway.remainingBalance)
         }
 
         val newBalance = layaway.remainingBalance - payment.amount
