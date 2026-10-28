@@ -7,6 +7,8 @@ import com.shoetrack.data.repository.CustomerRepositoryImpl
 import com.shoetrack.data.repository.LayawayRepositoryImpl
 import com.shoetrack.data.repository.ProductRepositoryImpl
 import com.shoetrack.data.repository.SyncRepositoryImpl
+import com.shoetrack.data.sync.LanSyncEngine
+import com.shoetrack.data.sync.SyncSession
 import com.shoetrack.db.ShoeTrackDatabase
 import com.shoetrack.domain.model.OverduePolicy
 import com.shoetrack.domain.repository.CustomerRepository
@@ -14,6 +16,7 @@ import com.shoetrack.domain.repository.LayawayRepository
 import com.shoetrack.domain.repository.ProductRepository
 import com.shoetrack.domain.repository.SyncRepository
 import com.shoetrack.domain.sync.LayawayMerger
+import com.shoetrack.domain.sync.SyncEngine
 import com.shoetrack.domain.usecase.MergeSnapshotUseCase
 import com.shoetrack.domain.service.IdGenerator
 import com.shoetrack.domain.service.OverdueReminderScheduler
@@ -105,6 +108,13 @@ private fun dataModule(
     single<ShoeTrackDatabase> { ShoeTrackDatabase(driverFactory.createDriver()) }
     single<CustomerRepository> { CustomerRepositoryImpl(get()) }
     single<ProductRepository> { ProductRepositoryImpl(get()) }
+    single<SyncEngine> {
+        LanSyncEngine(
+            deviceId = deviceId,
+            session = SyncSession(syncRepository = get(), mergeSnapshot = get(), photoStorage = get()),
+            clock = get(),
+        )
+    }
     single<SyncRepository> { SyncRepositoryImpl(database = get(), deviceId = deviceId, clock = get()) }
     single<LayawayRepository> {
         LayawayRepositoryImpl(database = get(), deviceId = deviceId, clock = get())

@@ -110,6 +110,12 @@ class FakePhotoStorage : PhotoStorage {
     }
 
     override suspend fun load(name: String): ByteArray? = photos[name]
+
+    override suspend fun exists(name: String): Boolean = name in photos
+
+    override suspend fun saveAs(name: String, imageBytes: ByteArray) {
+        photos[name] = imageBytes
+    }
 }
 
 class SequentialIdGenerator : IdGenerator {

@@ -6,4 +6,9 @@ interface PhotoStorage {
     suspend fun save(imageBytes: ByteArray): String
 
     suspend fun load(name: String): ByteArray?
+
+    suspend fun exists(name: String): Boolean
+
+    /** Stores a photo received from another device under the name its product already refers to. */
+    suspend fun saveAs(name: String, imageBytes: ByteArray)
 }

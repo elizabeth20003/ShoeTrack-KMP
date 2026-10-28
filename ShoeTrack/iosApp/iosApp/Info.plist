@@ -4,6 +4,8 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>ShoeTrack finds the other devices of your store on the Wi-Fi network to keep the layaways in sync.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>ShoeTrack uses the camera to photograph the shoes being set aside.</string>
 </dict>

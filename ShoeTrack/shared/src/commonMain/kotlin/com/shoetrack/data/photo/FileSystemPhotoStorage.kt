@@ -1,6 +1,7 @@
 package com.shoetrack.data.photo
 
 import com.shoetrack.domain.service.IdGenerator
+import com.shoetrack.domain.service.PhotoNames
 import com.shoetrack.domain.service.PhotoStorage
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,18 @@ internal class FileSystemPhotoStorage(
         val name = "${idGenerator.newId()}.jpg"
         SystemFileSystem.sink(Path(photosDirectory, name)).buffered().use { it.write(imageBytes) }
         name
+    }
+
+    override suspend fun exists(name: String): Boolean = withContext(dispatcher) {
+        PhotoNames.isValid(name) && SystemFileSystem.exists(Path(photosDirectory, name))
+    }
+
+    override suspend fun saveAs(name: String, imageBytes: ByteArray) {
+        require(PhotoNames.isValid(name)) { "Invalid photo name: $name" }
+        withContext(dispatcher) {
+            SystemFileSystem.createDirectories(Path(photosDirectory))
+            SystemFileSystem.sink(Path(photosDirectory, name)).buffered().use { it.write(imageBytes) }
+        }
     }
 
     override suspend fun load(name: String): ByteArray? = withContext(dispatcher) {
