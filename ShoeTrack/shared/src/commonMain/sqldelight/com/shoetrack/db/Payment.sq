@@ -13,3 +13,10 @@ VALUES (?, ?, ?, ?, ?);
 
 selectPaymentsByLayaway:
 SELECT * FROM Payment WHERE layawayId = ? ORDER BY paidAt ASC;
+
+insertPaymentIfAbsent:
+INSERT OR IGNORE INTO Payment(id, layawayId, amountCents, paidAt, recordedByDeviceId)
+VALUES (?, ?, ?, ?, ?);
+
+selectAllPayments:
+SELECT * FROM Payment ORDER BY paidAt ASC, id ASC;

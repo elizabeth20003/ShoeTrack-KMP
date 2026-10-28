@@ -8,9 +8,11 @@ import com.shoetrack.domain.model.OverdueReminder
 import com.shoetrack.domain.model.OverduePolicy
 import com.shoetrack.domain.model.Payment
 import com.shoetrack.domain.model.Product
+import com.shoetrack.domain.model.SyncSnapshot
 import com.shoetrack.domain.repository.CustomerRepository
 import com.shoetrack.domain.repository.LayawayRepository
 import com.shoetrack.domain.repository.ProductRepository
+import com.shoetrack.domain.repository.SyncRepository
 import com.shoetrack.domain.service.IdGenerator
 import com.shoetrack.domain.service.OverdueReminderScheduler
 import com.shoetrack.domain.service.PhotoStorage
@@ -142,3 +144,23 @@ fun scheduleReminderOf(
     scheduler = scheduler,
     policy = OverduePolicy(),
 )
+
+/** Reads and writes through the other fakes, so a test sees one consistent "device". */
+class FakeSyncRepository(
+    private val layaways: FakeLayawayRepository,
+    private val customers: FakeCustomerRepository,
+    private val products: FakeProductRepository,
+) : SyncRepository {
+
+    override suspend fun snapshot() = SyncSnapshot(
+        customers = customers.customers.values.toList(),
+        products = products.products.values.toList(),
+        layaways = layaways.layaways.values.toList(),
+    )
+
+    override suspend fun store(changes: SyncSnapshot) {
+        changes.customers.forEach { customers.customers.getOrPut(it.id) { it } }
+        changes.products.forEach { products.products.getOrPut(it.id) { it } }
+        changes.layaways.forEach { layaways.layaways[it.id] = it }
+    }
+}

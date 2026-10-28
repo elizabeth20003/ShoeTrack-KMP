@@ -14,3 +14,7 @@ SELECT * FROM Customer ORDER BY name ASC;
 
 selectCustomerById:
 SELECT * FROM Customer WHERE id = ?;
+
+insertCustomerIfAbsent:
+INSERT OR IGNORE INTO Customer(id, name, phone, registeredAt)
+VALUES (?, ?, ?, ?);

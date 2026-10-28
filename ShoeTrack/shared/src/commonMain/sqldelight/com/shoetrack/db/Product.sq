@@ -11,3 +11,10 @@ VALUES (?, ?, ?, ?);
 
 selectProductById:
 SELECT * FROM Product WHERE id = ?;
+
+insertProductIfAbsent:
+INSERT OR IGNORE INTO Product(id, description, photoPath, totalPriceCents)
+VALUES (?, ?, ?, ?);
+
+selectAllProducts:
+SELECT * FROM Product;

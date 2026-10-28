@@ -54,3 +54,25 @@ SELECT * FROM Layaway WHERE syncPending = 1;
 
 markAsSynced:
 UPDATE Layaway SET syncPending = 0 WHERE id = ?;
+
+selectAllLayaways:
+SELECT * FROM Layaway;
+
+-- Used by sync: the merged record needs no further upload, so syncPending is cleared.
+-- The dialect has no upsert, so a synced layaway is written as insert-if-absent plus update.
+insertSyncedLayawayIfAbsent:
+INSERT OR IGNORE INTO Layaway(
+    id, customerId, productId, remainingBalanceCents, state,
+    createdAt, lastPaymentAt, lastModifiedAt, lastModifiedByDeviceId, syncPending
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0);
+
+updateSyncedLayaway:
+UPDATE Layaway
+SET remainingBalanceCents = ?,
+    state = ?,
+    lastPaymentAt = ?,
+    lastModifiedAt = ?,
+    lastModifiedByDeviceId = ?,
+    syncPending = 0
+WHERE id = ?;

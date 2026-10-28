@@ -6,11 +6,15 @@ import com.shoetrack.data.photo.FileSystemPhotoStorage
 import com.shoetrack.data.repository.CustomerRepositoryImpl
 import com.shoetrack.data.repository.LayawayRepositoryImpl
 import com.shoetrack.data.repository.ProductRepositoryImpl
+import com.shoetrack.data.repository.SyncRepositoryImpl
 import com.shoetrack.db.ShoeTrackDatabase
 import com.shoetrack.domain.model.OverduePolicy
 import com.shoetrack.domain.repository.CustomerRepository
 import com.shoetrack.domain.repository.LayawayRepository
 import com.shoetrack.domain.repository.ProductRepository
+import com.shoetrack.domain.repository.SyncRepository
+import com.shoetrack.domain.sync.LayawayMerger
+import com.shoetrack.domain.usecase.MergeSnapshotUseCase
 import com.shoetrack.domain.service.IdGenerator
 import com.shoetrack.domain.service.OverdueReminderScheduler
 import com.shoetrack.domain.service.PhotoStorage
@@ -69,6 +73,16 @@ private fun domainModule(deviceId: String): Module = module {
             clock = get(),
         )
     }
+    single { LayawayMerger() }
+    factory {
+        MergeSnapshotUseCase(
+            syncRepository = get(),
+            merger = get(),
+            evaluateOverdue = get(),
+            scheduleReminder = get(),
+            clock = get(),
+        )
+    }
     factory { RefreshOverdueUseCase(layawayRepository = get(), evaluateOverdue = get(), clock = get()) }
     factory { ObserveLayawaysUseCase(get()) }
     factory { SavePhotoUseCase(get()) }
@@ -91,6 +105,7 @@ private fun dataModule(
     single<ShoeTrackDatabase> { ShoeTrackDatabase(driverFactory.createDriver()) }
     single<CustomerRepository> { CustomerRepositoryImpl(get()) }
     single<ProductRepository> { ProductRepositoryImpl(get()) }
+    single<SyncRepository> { SyncRepositoryImpl(database = get(), deviceId = deviceId, clock = get()) }
     single<LayawayRepository> {
         LayawayRepositoryImpl(database = get(), deviceId = deviceId, clock = get())
     }
