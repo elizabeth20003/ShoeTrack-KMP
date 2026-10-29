@@ -15,7 +15,7 @@
     <string name="customer_phone">Teléfono</string>
     <string name="product_description">Zapatos (marca, modelo, talla)</string>
     <string name="price">Precio total</string>
-    <string name="initial_payment">Abono inicial (opcional)</string>
+    <string name="initial_payment">Abono inicial</string>
     <string name="save">Guardar</string>
     <string name="layaway_details_title">Apartado</string>
     <string name="total_price_label">Total: %1$s</string>
@@ -42,11 +42,28 @@
     <string name="clear">Borrar</string>
     <string name="payment_exceeds_balance">El abono no puede ser mayor que el saldo (%1$s)</string>
     <string name="initial_payment_exceeds_price">El abono inicial no puede ser mayor que el precio</string>
-    <string name="sync_no_devices">No hay otros dispositivos cerca</string>
-    <string name="sync_nearby">%1$d dispositivos cerca</string>
-    <string name="sync_nearby_synced">%1$d dispositivos cerca · sincronizado a las %2$s</string>
+    <string name="sync_no_devices">Sin dispositivos</string>
+    <string name="sync_nearby">%1$d cerca</string>
+    <string name="sync_nearby_synced">%1$d cerca · %2$s</string>
     <string name="sync_in_progress">Sincronizando…</string>
-    <string name="sync_failed">Error al sincronizar, reintentando</string>
+    <string name="sync_failed">Sin sincronizar</string>
     <string name="is_existing_customer">¿Es un cliente ya registrado?</string>
     <string name="existing_customer">Cliente registrado</string>
+    <string name="total_owed">Total por cobrar</string>
+    <string name="owed_summary">por cobrar en %1$d apartados, %2$d en mora</string>
+    <string name="badge_paid">Pagado</string>
+    <string name="filter_all">Todos</string>
+    <string name="filter_active">Activos</string>
+    <string name="filter_overdue">En mora</string>
+    <string name="filter_paid">Pagados</string>
+    <string name="left_of">de %1$s</string>
+    <string name="paid_percent">%1$s pagado</string>
+    <string name="next_payment_today">Próximo abono hoy</string>
+    <string name="paid_in_full_pill">Pagado</string>
+    <plurals name="next_payment_in_days">
+        <item quantity="one">Próximo abono en %1$d día</item>
+        <item quantity="other">Próximo abono en %1$d días</item>
+    </plurals>
+    <string name="optional">Opcional</string>
+    <string name="photo_hint">Encuadra los zapatos en el marco</string>
 </resources>

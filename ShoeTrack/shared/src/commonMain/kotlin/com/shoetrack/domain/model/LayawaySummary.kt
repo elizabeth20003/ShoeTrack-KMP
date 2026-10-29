@@ -9,6 +9,15 @@ data class LayawaySummary(
     val productDescription: String,
     val productPhotoPath: String,
     val remainingBalance: Money,
+    val totalPrice: Money,
     val state: LayawayState,
     val lastPaymentAt: Instant,
-)
+) {
+    /** How much of the price is paid, from 0 to 1. */
+    val paidFraction: Float
+        get() = if (totalPrice.isPositive) {
+            (1f - remainingBalance.cents.toFloat() / totalPrice.cents).coerceIn(0f, 1f)
+        } else {
+            0f
+        }
+}

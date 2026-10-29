@@ -55,6 +55,7 @@ internal fun layawaySummaryOf(
     productDescription: String,
     productPhotoPath: String,
     remainingBalanceCents: Long,
+    totalPriceCents: Long,
     state: String,
     lastPaymentAt: Long,
 ): LayawaySummary = LayawaySummary(
@@ -63,6 +64,7 @@ internal fun layawaySummaryOf(
     productDescription = productDescription,
     productPhotoPath = productPhotoPath,
     remainingBalance = Money(remainingBalanceCents),
+    totalPrice = Money(totalPriceCents),
     state = state.toLayawayState(),
     lastPaymentAt = Instant.fromEpochMilliseconds(lastPaymentAt),
 )

@@ -49,7 +49,7 @@ fun AppNavigation(
         }
         composable<LayawayDetailRoute> { entry ->
             val layawayId = entry.toRoute<LayawayDetailRoute>().id
-            val viewModel = viewModel { LayawayDetailViewModel(layawayId, koin.get(), koin.get()) }
+            val viewModel = viewModel { LayawayDetailViewModel(layawayId, koin.get(), koin.get(), koin.get(), koin.get()) }
             LayawayDetailScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
         }
     }

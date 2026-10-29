@@ -10,6 +10,7 @@ import com.shoetrack.domain.model.Customer
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Money
+import com.shoetrack.domain.model.OverduePolicy
 import com.shoetrack.domain.model.Product
 import com.shoetrack.domain.usecase.GetLayawayDetailUseCase
 import com.shoetrack.domain.usecase.ProcessPaymentUseCase
@@ -58,7 +59,16 @@ class LayawayDetailViewModelTest : MainDispatcherTest() {
             deviceId = "device-1",
             scheduleReminder = scheduleReminderOf(layaways, customers, products),
         ),
+        overduePolicy = OverduePolicy(),
+        clock = FixedClock(now),
     )
+
+    @Test
+    fun anActiveLayawayCountsTheDaysLeftBeforeItIsOverdue() {
+        storeLayaway()
+
+        assertEquals(30, viewModel().uiState.value.daysUntilDue)
+    }
 
     @Test
     fun loadsTheLayawayDetailOnCreation() {

@@ -3,6 +3,8 @@ package com.shoetrack.presentation.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shoetrack.domain.model.LayawaySummary
+import com.shoetrack.domain.model.LayawayTotals
+import com.shoetrack.domain.model.totals
 import com.shoetrack.domain.sync.SyncEngine
 import com.shoetrack.domain.sync.SyncStatus
 import com.shoetrack.domain.usecase.ObserveLayawaysUseCase
@@ -23,6 +25,8 @@ sealed interface LayawayListUiState {
     data class Loaded(
         val layaways: List<LayawaySummary>,
         val hasAnyLayaways: Boolean,
+        val totals: LayawayTotals,
+        val filter: LayawayFilter = LayawayFilter.All,
     ) : LayawayListUiState
     data object Error : LayawayListUiState
 }
@@ -38,10 +42,18 @@ class LayawayListViewModel(
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
 
-    val uiState: StateFlow<LayawayListUiState> = combine<List<LayawaySummary>, String, LayawayListUiState>(observeLayaways(), _query) { layaways, query ->
+    private val _filter = MutableStateFlow(LayawayFilter.All)
+
+    val uiState: StateFlow<LayawayListUiState> = combine<List<LayawaySummary>, String, LayawayFilter, LayawayListUiState>(
+        observeLayaways(),
+        _query,
+        _filter,
+    ) { layaways, query, filter ->
         LayawayListUiState.Loaded(
-            layaways = layaways.filter { it.matches(query) },
+            layaways = layaways.filter { filter.accepts(it) && it.matches(query) },
             hasAnyLayaways = layaways.isNotEmpty(),
+            totals = layaways.totals(),
+            filter = filter,
         )
     }
         .catch { emit(LayawayListUiState.Error) }
@@ -49,6 +61,10 @@ class LayawayListViewModel(
 
     fun onQueryChange(query: String) {
         _query.value = query
+    }
+
+    fun onFilterChange(filter: LayawayFilter) {
+        _filter.value = filter
     }
 
     init {

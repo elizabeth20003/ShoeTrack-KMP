@@ -17,6 +17,7 @@ class LayawaySearchTest {
         productDescription = "Nike Air Force 42",
         productPhotoPath = "",
         remainingBalance = Money(10_000),
+        totalPrice = Money(10_000),
         state = LayawayState.Active,
         lastPaymentAt = Instant.parse("2026-01-01T00:00:00Z"),
     )

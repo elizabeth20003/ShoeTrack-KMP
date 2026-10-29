@@ -3,7 +3,10 @@ package com.shoetrack.presentation.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shoetrack.domain.error.LayawayNotFoundException
+import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayDetail
+import com.shoetrack.domain.model.LayawayState
+import com.shoetrack.domain.model.OverduePolicy
 import com.shoetrack.domain.usecase.GetLayawayDetailUseCase
 import com.shoetrack.domain.usecase.RegisterPaymentUseCase
 import com.shoetrack.presentation.common.runCatchingExceptCancellation
@@ -17,6 +20,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 
 data class LayawayDetailUiState(
     val detail: LayawayDetail? = null,
@@ -25,6 +30,8 @@ data class LayawayDetailUiState(
     val isPaymentDialogOpen: Boolean = false,
     val paymentInput: String = "",
     val isSubmittingPayment: Boolean = false,
+    /** Whole days left before an active layaway becomes overdue; null when it is not active. */
+    val daysUntilDue: Int? = null,
 ) {
     val isPaymentTooHigh: Boolean
         get() {
@@ -45,6 +52,8 @@ class LayawayDetailViewModel(
     private val layawayId: String,
     private val getLayawayDetail: GetLayawayDetailUseCase,
     private val registerPayment: RegisterPaymentUseCase,
+    private val overduePolicy: OverduePolicy,
+    private val clock: Clock,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LayawayDetailUiState())
@@ -80,11 +89,21 @@ class LayawayDetailViewModel(
         }
     }
 
+    private fun daysUntilDue(layaway: Layaway): Int? {
+        if (layaway.state != LayawayState.Active) return null
+        val remaining = overduePolicy.dueAt(layaway) - clock.now()
+        val wholeDays = remaining.inWholeDays
+        val roundedUp = if (remaining > wholeDays.days) wholeDays + 1 else wholeDays
+        return roundedUp.coerceAtLeast(0).toInt()
+    }
+
     private suspend fun loadDetail() {
         val result = runCatchingExceptCancellation { getLayawayDetail(layawayId) }
+        val detail = result.getOrNull()
         _uiState.update {
             it.copy(
-                detail = result.getOrNull(),
+                detail = detail,
+                daysUntilDue = detail?.layaway?.let(::daysUntilDue),
                 isLoading = false,
                 loadFailed = result.exceptionOrNull().let { error ->
                     error != null && error !is LayawayNotFoundException

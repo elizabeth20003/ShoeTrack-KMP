@@ -68,6 +68,7 @@ class FakeLayawayRepository : LayawayRepository {
                     productDescription = it.productId,
                     productPhotoPath = "",
                     remainingBalance = it.remainingBalance,
+                    totalPrice = it.remainingBalance,
                     state = it.state,
                     lastPaymentAt = it.lastPaymentAt,
                 )

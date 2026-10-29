@@ -15,7 +15,7 @@
     <string name="customer_phone">Phone</string>
     <string name="product_description">Shoes (brand, model, size)</string>
     <string name="price">Total price</string>
-    <string name="initial_payment">Initial payment (optional)</string>
+    <string name="initial_payment">Initial payment</string>
     <string name="save">Save</string>
     <string name="layaway_details_title">Layaway</string>
     <string name="total_price_label">Total: %1$s</string>
@@ -42,11 +42,28 @@
     <string name="clear">Clear</string>
     <string name="payment_exceeds_balance">The payment cannot be more than the balance (%1$s)</string>
     <string name="initial_payment_exceeds_price">The initial payment cannot be more than the price</string>
-    <string name="sync_no_devices">No other devices nearby</string>
-    <string name="sync_nearby">%1$d nearby devices</string>
-    <string name="sync_nearby_synced">%1$d nearby devices · synced at %2$s</string>
+    <string name="sync_no_devices">No devices nearby</string>
+    <string name="sync_nearby">%1$d nearby</string>
+    <string name="sync_nearby_synced">%1$d nearby · %2$s</string>
     <string name="sync_in_progress">Syncing…</string>
-    <string name="sync_failed">Sync failed, retrying</string>
+    <string name="sync_failed">Sync failed</string>
     <string name="is_existing_customer">Is this an existing customer?</string>
     <string name="existing_customer">Existing customer</string>
+    <string name="total_owed">Total owed</string>
+    <string name="owed_summary">still owed across %1$d layaways, %2$d overdue</string>
+    <string name="badge_paid">Paid in full</string>
+    <string name="filter_all">All</string>
+    <string name="filter_active">Active</string>
+    <string name="filter_overdue">Overdue</string>
+    <string name="filter_paid">Paid</string>
+    <string name="left_of">left of %1$s</string>
+    <string name="paid_percent">%1$s paid</string>
+    <string name="next_payment_today">Next payment due today</string>
+    <string name="paid_in_full_pill">Paid in full</string>
+    <plurals name="next_payment_in_days">
+        <item quantity="one">Next payment in %1$d day</item>
+        <item quantity="other">Next payment in %1$d days</item>
+    </plurals>
+    <string name="optional">Optional</string>
+    <string name="photo_hint">Fit the shoes inside the frame</string>
 </resources>

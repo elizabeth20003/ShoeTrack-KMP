@@ -36,6 +36,7 @@ SELECT
     Product.description AS productDescription,
     Product.photoPath AS productPhotoPath,
     Layaway.remainingBalanceCents,
+    Product.totalPriceCents,
     Layaway.state,
     Layaway.lastPaymentAt
 FROM Layaway
