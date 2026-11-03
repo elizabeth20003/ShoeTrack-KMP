@@ -52,6 +52,7 @@ private fun domainModule(deviceId: String): Module = module {
             getLayawayDetail = get(),
             scheduler = get(),
             policy = get(),
+            clock = get(),
         )
     }
 
@@ -73,6 +74,7 @@ private fun domainModule(deviceId: String): Module = module {
             createLayaway = get(),
             registerPayment = get(),
             scheduleReminder = get(),
+            refreshOverdue = get(),
             idGenerator = get(),
             clock = get(),
         )

@@ -6,7 +6,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,11 +28,16 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -61,6 +65,7 @@ import com.shoetrack.presentation.components.SneakerIllustration
 import com.shoetrack.presentation.components.colorwayFor
 import com.shoetrack.presentation.components.progressColorFor
 import com.shoetrack.presentation.format.format
+import com.shoetrack.presentation.format.formatAsPercent
 import com.shoetrack.presentation.format.formatAsTime
 import com.shoetrack.presentation.photo.ShoePhoto
 import com.shoetrack.presentation.theme.ShoeTrackTheme
@@ -88,7 +93,6 @@ import shoetrack.shared.generated.resources.sync_nearby
 import shoetrack.shared.generated.resources.sync_nearby_synced
 import shoetrack.shared.generated.resources.sync_no_devices
 import shoetrack.shared.generated.resources.total_owed
-import kotlin.math.roundToInt
 import kotlin.time.Instant
 
 private val PhotoSize = 96.dp
@@ -293,12 +297,9 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
         leadingIcon = { AppIcon(IconShape.Search, MaterialTheme.colorScheme.onSurfaceVariant, size = 22.dp) },
         trailingIcon = {
             if (query.isNotEmpty()) {
-                Text(
-                    text = stringResource(Res.string.clear),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clip(CircleShape).clickable { onQueryChange("") }.padding(12.dp),
-                )
+                TextButton(onClick = { onQueryChange("") }) {
+                    Text(stringResource(Res.string.clear), style = MaterialTheme.typography.labelLarge)
+                }
             }
         },
         singleLine = true,
@@ -320,16 +321,18 @@ private fun FilterChips(selected: LayawayFilter, onSelect: (LayawayFilter) -> Un
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         LayawayFilter.entries.forEach { filter ->
-            val isSelected = filter == selected
-            Text(
-                text = stringResource(filter.label()),
-                style = MaterialTheme.typography.labelLarge,
-                color = if (isSelected) ShoeTrackTheme.colors.onHero else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(if (isSelected) ShoeTrackTheme.colors.hero else MaterialTheme.colorScheme.surface)
-                    .clickable { onSelect(filter) }
-                    .padding(horizontal = 16.dp, vertical = 9.dp),
+            FilterChip(
+                selected = filter == selected,
+                onClick = { onSelect(filter) },
+                label = { Text(stringResource(filter.label())) },
+                shape = CircleShape,
+                colors = FilterChipDefaults.filterChipColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    selectedContainerColor = ShoeTrackTheme.colors.hero,
+                    selectedLabelColor = ShoeTrackTheme.colors.onHero,
+                ),
+                border = null,
             )
         }
     }
@@ -347,51 +350,53 @@ private fun LayawayCard(layaway: LayawaySummary, onClick: () -> Unit, modifier: 
     val colors = ShoeTrackTheme.colors
     val isOverdue = layaway.state == LayawayState.Overdue
     val isPaid = layaway.state == LayawayState.Completed
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.large)
-            .background(MaterialTheme.colorScheme.surface)
-            .clickable(onClick = onClick)
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    Card(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        modifier = modifier.fillMaxWidth(),
     ) {
-        Box(Modifier.size(PhotoSize).clip(MaterialTheme.shapes.medium)) {
-            CardPicture(layaway)
-        }
-        Column(Modifier.weight(1f).height(PhotoSize), verticalArrangement = Arrangement.SpaceBetween) {
-            Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        text = layaway.customerName,
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        text = layaway.productDescription,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                when {
-                    isOverdue -> Badge(
-                        stringResource(Res.string.state_overdue), colors.overdueBadge, colors.onOverdueBadge,
-                    )
-                    isPaid -> Badge(stringResource(Res.string.badge_paid), colors.doneBadge, colors.onDoneBadge)
-                }
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Box(Modifier.size(PhotoSize).clip(MaterialTheme.shapes.medium)) {
+                CardPicture(layaway)
             }
-            Text(text = layaway.remainingBalance.format(), style = ShoeTrackTheme.money.medium)
-            val progressColor = progressColorFor(isOverdue, isPaid)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PaymentProgress(layaway.paidFraction, progressColor, Modifier.weight(1f))
-                Text(
-                    text = "${(layaway.paidFraction * 100).roundToInt()}%",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = progressColor,
-                )
+            Column(Modifier.weight(1f).height(PhotoSize), verticalArrangement = Arrangement.SpaceBetween) {
+                Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            text = layaway.customerName,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = layaway.productDescription,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    when {
+                        isOverdue -> Badge(
+                            stringResource(Res.string.state_overdue), colors.overdueBadge, colors.onOverdueBadge,
+                        )
+                        isPaid -> Badge(stringResource(Res.string.badge_paid), colors.doneBadge, colors.onDoneBadge)
+                    }
+                }
+                Text(text = layaway.remainingBalance.format(), style = ShoeTrackTheme.money.medium)
+                val progressColor = progressColorFor(isOverdue, isPaid)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PaymentProgress(layaway.paidFraction, progressColor, Modifier.weight(1f))
+                    Text(
+                        text = layaway.paidFraction.formatAsPercent(),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = progressColor,
+                    )
+                }
             }
         }
     }

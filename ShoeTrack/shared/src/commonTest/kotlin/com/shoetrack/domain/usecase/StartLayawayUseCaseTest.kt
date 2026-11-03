@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 class StartLayawayUseCaseTest {
@@ -25,7 +26,7 @@ class StartLayawayUseCaseTest {
     private val idGenerator = SequentialIdGenerator()
     private val clock = FixedClock(now)
     private val scheduler = FakeOverdueReminderScheduler()
-    private val scheduleReminder = scheduleReminderOf(layaways, customers, products, scheduler)
+    private val scheduleReminder = scheduleReminderOf(layaways, customers, products, scheduler, clock)
     private val startLayaway = StartLayawayUseCase(
         customerRepository = customers,
         productRepository = products,
@@ -40,6 +41,7 @@ class StartLayawayUseCaseTest {
             scheduleReminder = scheduleReminder,
         ),
         scheduleReminder = scheduleReminder,
+        refreshOverdue = RefreshOverdueUseCase(layaways, EvaluateOverdueUseCase(), clock),
         idGenerator = idGenerator,
         clock = clock,
     )
@@ -61,6 +63,32 @@ class StartLayawayUseCaseTest {
         assertEquals("Nike Air Force 42", products.products.values.single().description)
         assertEquals(result, layaways.layaways.values.single())
         assertEquals(Money(100_000), result.remainingBalance)
+    }
+
+    @Test
+    fun aLastPaymentDateOlderThanThirtyDaysStartsTheLayawayOverdueWithoutAReminder() = runTest {
+        val result = startLayaway(
+            request(initialPayment = Money(30_000)).copy(lastPaymentAt = Instant.parse("2025-12-01T00:00:00Z")),
+        )
+
+        assertEquals(LayawayState.Overdue, result.state)
+        assertEquals(Instant.parse("2025-12-01T00:00:00Z"), result.lastPaymentAt)
+        assertEquals(Instant.parse("2025-12-01T00:00:00Z"), layaways.payments.single().paidAt)
+        assertTrue(scheduler.scheduled.isEmpty())
+    }
+
+    @Test
+    fun aRecentLastPaymentDateKeepsTheLayawayActive() = runTest {
+        val result = startLayaway(request().copy(lastPaymentAt = Instant.parse("2026-01-25T00:00:00Z")))
+
+        assertEquals(LayawayState.Active, result.state)
+    }
+
+    @Test
+    fun rejectsALastPaymentDateInTheFuture() = runTest {
+        assertFailsWith<IllegalArgumentException> {
+            startLayaway(request().copy(lastPaymentAt = Instant.parse("2026-03-01T00:00:00Z")))
+        }
     }
 
     @Test

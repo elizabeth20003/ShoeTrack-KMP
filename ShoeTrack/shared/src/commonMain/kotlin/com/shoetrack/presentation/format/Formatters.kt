@@ -3,11 +3,15 @@ package com.shoetrack.presentation.format
 import com.shoetrack.domain.model.Money
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.math.roundToInt
 import kotlin.time.Instant
 
 const val MAX_MONEY_DIGITS = 9
 
 fun Money.format(): String = "$ ${(cents / 100).withThousandsSeparator()}"
+
+/** A fraction such as 0.6 as "60%". */
+fun Float.formatAsPercent(): String = "${(this * 100).roundToInt()}%"
 
 fun Instant.formatAsDate(): String =
     toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()

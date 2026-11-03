@@ -9,7 +9,9 @@ import com.shoetrack.domain.fakes.SequentialIdGenerator
 import com.shoetrack.domain.fakes.scheduleReminderOf
 import com.shoetrack.domain.model.Customer
 import com.shoetrack.domain.usecase.CreateLayawayUseCase
+import com.shoetrack.domain.usecase.EvaluateOverdueUseCase
 import com.shoetrack.domain.usecase.ProcessPaymentUseCase
+import com.shoetrack.domain.usecase.RefreshOverdueUseCase
 import com.shoetrack.domain.usecase.RegisterPaymentUseCase
 import com.shoetrack.domain.usecase.SavePhotoUseCase
 import com.shoetrack.domain.usecase.SearchCustomersUseCase
@@ -53,6 +55,7 @@ class NewLayawayViewModelTest : MainDispatcherTest() {
                     scheduleReminder = scheduleReminder,
                 ),
                 scheduleReminder = scheduleReminder,
+                refreshOverdue = RefreshOverdueUseCase(layaways, EvaluateOverdueUseCase(), clock),
                 idGenerator = idGenerator,
                 clock = clock,
             ),

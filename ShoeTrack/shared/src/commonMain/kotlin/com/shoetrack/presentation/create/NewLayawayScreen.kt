@@ -21,12 +21,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -44,6 +46,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
@@ -51,6 +54,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shoetrack.domain.model.Customer
 import com.shoetrack.presentation.components.AppIcon
+import com.shoetrack.presentation.components.BackButton
 import com.shoetrack.presentation.components.IconShape
 import com.shoetrack.presentation.components.SneakerIllustration
 import com.shoetrack.presentation.photo.ShoePhoto
@@ -60,7 +64,6 @@ import com.shoetrack.presentation.theme.ShoeTrackTheme
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import shoetrack.shared.generated.resources.Res
-import shoetrack.shared.generated.resources.back
 import shoetrack.shared.generated.resources.choose_photo
 import shoetrack.shared.generated.resources.customer_name
 import shoetrack.shared.generated.resources.customer_phone
@@ -72,6 +75,7 @@ import shoetrack.shared.generated.resources.initial_payment_exceeds_price
 import shoetrack.shared.generated.resources.invalid_phone
 import shoetrack.shared.generated.resources.is_existing_customer
 import shoetrack.shared.generated.resources.new_layaway
+import shoetrack.shared.generated.resources.new_layaway
 import shoetrack.shared.generated.resources.optional
 import shoetrack.shared.generated.resources.photo_hint
 import shoetrack.shared.generated.resources.price
@@ -79,6 +83,10 @@ import shoetrack.shared.generated.resources.product_description
 import shoetrack.shared.generated.resources.required_field
 import shoetrack.shared.generated.resources.save
 import shoetrack.shared.generated.resources.take_photo
+import shoetrack.shared.generated.resources.take_photo
+
+// The viewfinder stays dark in both themes, like a camera screen.
+private val ViewfinderColor = Color(0xFF101437)
 
 @Composable
 fun NewLayawayScreen(
@@ -206,19 +214,12 @@ internal fun NewLayawayContent(
 
 @Composable
 private fun Header(onBack: () -> Unit) {
-    val backLabel = stringResource(Res.string.back)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.background)
-                .clickable(onClick = onBack)
-                .semantics { contentDescription = backLabel },
-            contentAlignment = Alignment.Center,
-        ) {
-            AppIcon(IconShape.Back, MaterialTheme.colorScheme.onSurface, size = 22.dp)
-        }
+        BackButton(
+            onBack,
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        )
         Text(stringResource(Res.string.new_layaway), style = MaterialTheme.typography.headlineMedium)
     }
 }
@@ -248,7 +249,7 @@ private fun PhotoSection(photoName: String?, onTakePhoto: () -> Unit, onPickPhot
             .fillMaxWidth()
             .height(188.dp)
             .clip(MaterialTheme.shapes.extraLarge)
-            .background(ShoeTrackTheme.colors.tag),
+            .background(ViewfinderColor),
     ) {
         if (photoName != null) {
             ShoePhoto(name = photoName, modifier = Modifier.fillMaxSize())
@@ -274,20 +275,16 @@ private fun PhotoSection(photoName: String?, onTakePhoto: () -> Unit, onPickPhot
                 .padding(6.dp)
                 .clip(CircleShape)
                 .background(Color.White)
-                .clickable(onClick = onTakePhoto)
+                .clickable(role = Role.Button, onClick = onTakePhoto)
                 .semantics { contentDescription = shutterLabel },
         )
-        Text(
-            text = stringResource(Res.string.choose_photo),
-            style = MaterialTheme.typography.labelLarge,
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 40.dp, bottom = 26.dp)
-                .clip(CircleShape)
-                .clickable(onClick = onPickPhoto)
-                .padding(8.dp),
-        )
+        TextButton(
+            onClick = onPickPhoto,
+            colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
+            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 32.dp, bottom = 20.dp),
+        ) {
+            Text(stringResource(Res.string.choose_photo), style = MaterialTheme.typography.labelLarge)
+        }
     }
 }
 
@@ -349,7 +346,7 @@ private fun CustomerSuggestions(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surface)
-                        .clickable { onSelected(customer) }
+                        .clickable(role = Role.Button) { onSelected(customer) }
                         .padding(horizontal = 14.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {

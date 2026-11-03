@@ -2,6 +2,7 @@ package com.shoetrack.presentation
 
 import com.shoetrack.domain.model.Money
 import com.shoetrack.presentation.format.format
+import com.shoetrack.presentation.format.formatAsPercent
 import com.shoetrack.presentation.format.toMoneyOrNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,5 +26,12 @@ class FormattersTest {
     fun textWithoutDigitsIsNotMoney() {
         assertNull("abc".toMoneyOrNull())
         assertNull("".toMoneyOrNull())
+    }
+
+    @Test
+    fun formatsAFractionAsAWholePercent() {
+        assertEquals("60%", 0.6f.formatAsPercent())
+        assertEquals("0%", 0f.formatAsPercent())
+        assertEquals("100%", 1f.formatAsPercent())
     }
 }

@@ -7,6 +7,7 @@ import com.shoetrack.domain.model.Payment
 import com.shoetrack.domain.repository.LayawayRepository
 import com.shoetrack.domain.service.IdGenerator
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 class RegisterPaymentUseCase(
     private val layawayRepository: LayawayRepository,
@@ -17,7 +18,7 @@ class RegisterPaymentUseCase(
     private val scheduleReminder: ScheduleOverdueReminderUseCase,
 ) {
 
-    suspend operator fun invoke(layawayId: String, amount: Money): Layaway {
+    suspend operator fun invoke(layawayId: String, amount: Money, paidAt: Instant = clock.now()): Layaway {
         require(amount.isPositive) { "The payment amount must be greater than zero" }
 
         val layaway = layawayRepository.getById(layawayId)
@@ -26,7 +27,7 @@ class RegisterPaymentUseCase(
             id = idGenerator.newId(),
             layawayId = layaway.id,
             amount = amount,
-            paidAt = clock.now(),
+            paidAt = paidAt,
             recordedByDeviceId = deviceId,
         )
 

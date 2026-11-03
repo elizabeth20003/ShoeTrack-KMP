@@ -10,6 +10,7 @@ import com.shoetrack.domain.repository.ProductRepository
 import com.shoetrack.domain.service.IdGenerator
 import com.shoetrack.domain.validation.PhoneNumberRules
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 data class NewLayaway(
     val customerName: String,
@@ -20,6 +21,8 @@ data class NewLayaway(
     val initialPayment: Money = Money.ZERO,
     /** Set when the layaway belongs to a customer already registered; no new customer is created. */
     val existingCustomerId: String? = null,
+    /** When the last payment was made, for layaways copied from the paper notebook. Null means now. */
+    val lastPaymentAt: Instant? = null,
 )
 
 class StartLayawayUseCase(
@@ -29,6 +32,7 @@ class StartLayawayUseCase(
     private val createLayaway: CreateLayawayUseCase,
     private val registerPayment: RegisterPaymentUseCase,
     private val scheduleReminder: ScheduleOverdueReminderUseCase,
+    private val refreshOverdue: RefreshOverdueUseCase,
     private val idGenerator: IdGenerator,
     private val clock: Clock,
 ) {
@@ -43,6 +47,8 @@ class StartLayawayUseCase(
         require(request.initialPayment >= Money.ZERO) { "The initial payment cannot be negative" }
 
         val now = clock.now()
+        val startedAt = request.lastPaymentAt ?: now
+        require(startedAt <= now) { "The last payment cannot be in the future" }
         val existingCustomer = request.existingCustomerId?.let { id ->
             requireNotNull(customerRepository.getById(id)) { "Customer $id does not exist" }
         }
@@ -58,17 +64,19 @@ class StartLayawayUseCase(
             photoPath = request.productPhotoPath,
             totalPrice = request.productPrice,
         )
-        val layaway = createLayaway(idGenerator.newId(), customer.id, product, now)
+        val layaway = createLayaway(idGenerator.newId(), customer.id, product, startedAt)
 
         if (existingCustomer == null) customerRepository.save(customer)
         productRepository.save(product)
         layawayRepository.create(layaway)
         scheduleReminder(layaway.id)
 
-        return if (request.initialPayment.isPositive) {
-            registerPayment(layaway.id, request.initialPayment)
+        val started = if (request.initialPayment.isPositive) {
+            registerPayment(layaway.id, request.initialPayment, paidAt = startedAt)
         } else {
             layaway
         }
+        // A layaway copied from the notebook may already be past its due date.
+        return refreshOverdue().firstOrNull { it.id == started.id } ?: started
     }
 }

@@ -150,10 +150,12 @@ fun scheduleReminderOf(
     customers: FakeCustomerRepository,
     products: FakeProductRepository,
     scheduler: OverdueReminderScheduler = FakeOverdueReminderScheduler(),
+    clock: Clock = FixedClock(Instant.fromEpochMilliseconds(0)),
 ) = ScheduleOverdueReminderUseCase(
     getLayawayDetail = GetLayawayDetailUseCase(layaways, customers, products),
     scheduler = scheduler,
     policy = OverduePolicy(),
+    clock = clock,
 )
 
 /** Reads and writes through the other fakes, so a test sees one consistent "device". */

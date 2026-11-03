@@ -1,7 +1,6 @@
 package com.shoetrack.presentation.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,8 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -53,14 +49,14 @@ import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Money
 import com.shoetrack.domain.model.Payment
 import com.shoetrack.domain.model.Product
-import com.shoetrack.presentation.components.AppIcon
-import com.shoetrack.presentation.components.IconShape
+import com.shoetrack.presentation.components.BackButton
 import com.shoetrack.presentation.components.PaymentProgress
 import com.shoetrack.presentation.components.SneakerIllustration
 import com.shoetrack.presentation.components.colorwayFor
 import com.shoetrack.presentation.components.progressColorFor
 import com.shoetrack.presentation.format.format
 import com.shoetrack.presentation.format.formatAsDate
+import com.shoetrack.presentation.format.formatAsPercent
 import com.shoetrack.presentation.photo.ShoePhoto
 import com.shoetrack.presentation.theme.ShoeTrackTheme
 import org.jetbrains.compose.resources.getString
@@ -68,7 +64,6 @@ import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import shoetrack.shared.generated.resources.Res
 import shoetrack.shared.generated.resources.add_payment
-import shoetrack.shared.generated.resources.back
 import shoetrack.shared.generated.resources.cancel
 import shoetrack.shared.generated.resources.confirm
 import shoetrack.shared.generated.resources.error_load_failed
@@ -85,7 +80,6 @@ import shoetrack.shared.generated.resources.payment_exceeds_balance
 import shoetrack.shared.generated.resources.payments_title
 import shoetrack.shared.generated.resources.state_cancelled
 import shoetrack.shared.generated.resources.state_overdue
-import kotlin.math.roundToInt
 import kotlin.time.Instant
 
 private val SheetTop = 272.dp
@@ -142,7 +136,12 @@ internal fun LayawayDetailContent(
 
                 else -> DetailBody(detail, uiState.daysUntilDue, onBack, onAddPayment)
             }
-            if (detail == null) BackButton(onBack, Modifier.align(Alignment.TopStart).padding(16.dp))
+            if (detail == null) BackButton(
+                onBack,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
+            )
         }
     }
 
@@ -161,22 +160,6 @@ internal fun LayawayDetailContent(
 @Composable
 private fun BoxScope.CenteredMessage(text: String) {
     Text(text = text, modifier = Modifier.align(Alignment.Center).padding(32.dp))
-}
-
-@Composable
-private fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
-    val label = stringResource(Res.string.back)
-    Box(
-        modifier = modifier
-            .size(44.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surface)
-            .clickable(onClick = onBack)
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
-    ) {
-        AppIcon(IconShape.Back, MaterialTheme.colorScheme.onSurface, size = 22.dp)
-    }
 }
 
 @Composable
@@ -220,7 +203,12 @@ private fun DetailBody(detail: LayawayDetail, daysUntilDue: Int?, onBack: () -> 
                 PaymentsSection(layaway.payments)
             }
         }
-        BackButton(onBack, Modifier.align(Alignment.TopStart).padding(16.dp))
+        BackButton(
+                onBack,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
+            )
         StatusPill(layaway.state, daysUntilDue, Modifier.align(Alignment.TopEnd).padding(16.dp))
     }
 }
@@ -287,7 +275,7 @@ private fun ProgressSection(detail: LayawayDetail) {
         0f
     }
     val color = progressColorFor(layaway.state == LayawayState.Overdue, layaway.state == LayawayState.Completed)
-    val percent = stringResource(Res.string.paid_percent, "${(fraction * 100).roundToInt()}%")
+    val percent = stringResource(Res.string.paid_percent, fraction.formatAsPercent())
     Column(Modifier.padding(top = 12.dp, bottom = 20.dp)) {
         PaymentProgress(fraction, color, thickness = 12.dp, description = percent)
         Text(
