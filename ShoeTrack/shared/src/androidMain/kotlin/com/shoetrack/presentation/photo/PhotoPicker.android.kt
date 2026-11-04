@@ -18,7 +18,7 @@ import java.io.File
 private const val CAPTURES_DIRECTORY = "captures"
 
 @Composable
-actual fun rememberPhotoPicker(onPhotoPicked: (ByteArray) -> Unit): PhotoPicker {
+actual fun rememberPhotoPicker(onPhotoPicked: (ByteArray) -> Unit, maxSidePx: Int): PhotoPicker {
     val context = LocalContext.current
     val currentOnPhotoPicked by rememberUpdatedState(onPhotoPicked)
     // The camera app runs in another task, so the target file must survive this activity being recreated.
@@ -27,14 +27,14 @@ actual fun rememberPhotoPicker(onPhotoPicked: (ByteArray) -> Unit): PhotoPicker 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
         val capture = pendingCapturePath?.let(::File)
         if (taken && capture != null) {
-            currentOnPhotoPicked(scaleToJpeg(capture.readBytes()))
+            currentOnPhotoPicked(scaleToJpeg(capture.readBytes(), maxSidePx))
         }
         capture?.delete()
         pendingCapturePath = null
     }
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         val bytes = uri?.let { context.contentResolver.openInputStream(it)?.use { stream -> stream.readBytes() } }
-        if (bytes != null) currentOnPhotoPicked(scaleToJpeg(bytes))
+        if (bytes != null) currentOnPhotoPicked(scaleToJpeg(bytes, maxSidePx))
     }
 
     return remember(context) {

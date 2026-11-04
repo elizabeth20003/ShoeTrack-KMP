@@ -7,12 +7,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.shoetrack.domain.model.Money
+import com.shoetrack.domain.notebook.NotebookEntry
 import com.shoetrack.presentation.create.NewLayawayScreen
 import com.shoetrack.presentation.create.NewLayawayViewModel
 import com.shoetrack.presentation.detail.LayawayDetailScreen
 import com.shoetrack.presentation.detail.LayawayDetailViewModel
 import com.shoetrack.presentation.list.LayawayListScreen
 import com.shoetrack.presentation.list.LayawayListViewModel
+import com.shoetrack.presentation.scan.ScanScreen
+import com.shoetrack.presentation.scan.ScanViewModel
+import kotlinx.datetime.LocalDate
 import org.koin.mp.KoinPlatform
 
 @Composable
@@ -35,16 +40,26 @@ fun AppNavigation(
             val viewModel = viewModel { LayawayListViewModel(koin.get(), koin.get(), koin.get()) }
             LayawayListScreen(
                 viewModel = viewModel,
-                onNewLayaway = { navController.navigate(NewLayawayRoute) },
+                onNewLayaway = { navController.navigate(NewLayawayRoute()) },
+                onScanNotebook = { navController.navigate(ScanRoute) },
                 onOpenLayaway = { id -> navController.navigate(LayawayDetailRoute(id)) },
             )
         }
-        composable<NewLayawayRoute> {
-            val viewModel = viewModel { NewLayawayViewModel(koin.get(), koin.get(), koin.get()) }
+        composable<NewLayawayRoute> { entry ->
+            val prefill = entry.toRoute<NewLayawayRoute>().toNotebookEntry()
+            val viewModel = viewModel { NewLayawayViewModel(koin.get(), koin.get(), koin.get(), prefill) }
             NewLayawayScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() },
                 onSaved = { navController.popBackStack() },
+            )
+        }
+        composable<ScanRoute> {
+            val viewModel = viewModel { ScanViewModel(koin.get(), koin.get(), koin.get(), koin.get()) }
+            ScanScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+                onEntryRead = { read -> navController.navigate(read.toRoute()) },
             )
         }
         composable<LayawayDetailRoute> { entry ->
@@ -54,3 +69,20 @@ fun AppNavigation(
         }
     }
 }
+
+private fun NotebookEntry.toRoute() = NewLayawayRoute(
+    fromNotebook = true,
+    customerName = customerName,
+    productDescription = productDescription,
+    priceUnits = totalPrice?.let { it.cents / 100 },
+    paidUnits = paidAmount?.let { it.cents / 100 },
+    lastPaymentEpochDay = lastPaymentDate?.toEpochDays()?.toLong(),
+)
+
+private fun NewLayawayRoute.toNotebookEntry(): NotebookEntry? = if (!fromNotebook) null else NotebookEntry(
+    customerName = customerName,
+    productDescription = productDescription,
+    totalPrice = priceUnits?.let(Money::fromUnits),
+    paidAmount = paidUnits?.let(Money::fromUnits),
+    lastPaymentDate = lastPaymentEpochDay?.let { LocalDate.fromEpochDays(it) },
+)

@@ -21,7 +21,10 @@ import platform.posix.memcpy
 private const val JPEG_QUALITY = 0.8
 
 @Composable
-actual fun rememberPhotoPicker(onPhotoPicked: (ByteArray) -> Unit): PhotoPicker {
+actual fun rememberPhotoPicker(
+    onPhotoPicked: (ByteArray) -> Unit,
+    @Suppress("UNUSED_PARAMETER") maxSidePx: Int,
+): PhotoPicker {
     val currentOnPhotoPicked = rememberUpdatedState(onPhotoPicked)
     return remember { IosPhotoPicker { currentOnPhotoPicked.value(it) } }
 }

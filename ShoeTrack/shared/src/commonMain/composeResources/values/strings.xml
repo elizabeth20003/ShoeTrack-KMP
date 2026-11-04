@@ -66,4 +66,24 @@
     </plurals>
     <string name="optional">Optional</string>
     <string name="photo_hint">Fit the shoes inside the frame</string>
+    <string name="scan_notebook">Scan notebook</string>
+    <string name="scan_hint">Photograph one layaway line of the notebook. The text the phone reads will show here.</string>
+    <string name="scan_reading">Reading the photo…</string>
+    <string name="scan_failed">The photo could not be read. Try again.</string>
+    <string name="scan_result_title">What the phone read</string>
+    <string name="scan_nothing_found">No text found in the photo.</string>
+    <string name="notebook_review_title">Read from your notebook</string>
+    <string name="notebook_review_hint">Check every field before saving. Handwriting is easy to misread.</string>
+    <string name="last_payment_date">Last payment date</string>
+    <string name="last_payment_hint">The overdue reminder counts from this date.</string>
+    <string name="today">Today</string>
+    <string name="scan_no_layaway">No layaway found in the photo</string>
+    <string name="scan_no_layaway_hint">Try a closer photo of a single line, with good light.</string>
+    <string name="ai_title">Read with AI</string>
+    <string name="ai_hint">Paste an API key to read handwriting far better. The photo is sent to Anthropic to be read; without a key or internet the phone reads it instead.</string>
+    <string name="ai_key_label">API key</string>
+    <string name="ai_key_save">Save key</string>
+    <string name="ai_enabled">AI reading is on</string>
+    <string name="ai_key_remove">Remove key</string>
+    <string name="ai_unavailable">The AI could not be reached, so the phone read the photo.</string>
 </resources>

@@ -1,0 +1,13 @@
+CREATE TABLE Setting (
+    name TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+selectSetting:
+SELECT value FROM Setting WHERE name = ?;
+
+upsertSetting:
+INSERT OR REPLACE INTO Setting(name, value) VALUES (?, ?);
+
+deleteSetting:
+DELETE FROM Setting WHERE name = ?;

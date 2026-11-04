@@ -4,7 +4,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -14,7 +16,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /** Icons drawn on a 24-unit grid, so the app does not need the material-icons dependency. */
-enum class IconShape { Plus, Search, Back, Check }
+enum class IconShape { Plus, Search, Back, Check, Camera }
 
 @Composable
 fun AppIcon(icon: IconShape, color: Color, modifier: Modifier = Modifier, size: Dp = 24.dp) {
@@ -40,6 +42,16 @@ fun AppIcon(icon: IconShape, color: Color, modifier: Modifier = Modifier, size: 
                 color,
                 style = stroke,
             )
+            IconShape.Camera -> {
+                drawRoundRect(
+                    color,
+                    topLeft = point(3f, 7f),
+                    size = Size(18f * unit, 13f * unit),
+                    cornerRadius = CornerRadius(3f * unit),
+                    style = stroke,
+                )
+                drawCircle(color, radius = 3.4f * unit, center = point(12f, 13.5f), style = stroke)
+            }
             IconShape.Check -> drawPath(
                 Path().apply {
                     moveTo(5f * unit, 12f * unit)

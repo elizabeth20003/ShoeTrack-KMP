@@ -8,16 +8,15 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import kotlin.math.max
 
-private const val MAX_SIDE_PX = 1280
 private const val JPEG_QUALITY = 85
 
 /** Downscales a photo and bakes in its EXIF rotation, so stored images are small and upright. */
-internal fun scaleToJpeg(source: ByteArray): ByteArray {
+internal fun scaleToJpeg(source: ByteArray, maxSidePx: Int): ByteArray {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(source, 0, source.size, bounds)
 
     val options = BitmapFactory.Options().apply {
-        inSampleSize = sampleSizeFor(max(bounds.outWidth, bounds.outHeight))
+        inSampleSize = sampleSizeFor(max(bounds.outWidth, bounds.outHeight), maxSidePx)
     }
     val decoded = BitmapFactory.decodeByteArray(source, 0, source.size, options) ?: return source
 
@@ -27,9 +26,9 @@ internal fun scaleToJpeg(source: ByteArray): ByteArray {
     return output.toByteArray()
 }
 
-private fun sampleSizeFor(longestSide: Int): Int {
+private fun sampleSizeFor(longestSide: Int, maxSidePx: Int): Int {
     var sample = 1
-    while (longestSide / (sample * 2) >= MAX_SIDE_PX) sample *= 2
+    while (longestSide / (sample * 2) >= maxSidePx) sample *= 2
     return sample
 }
 

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shoetrack.domain.model.Customer
 import com.shoetrack.domain.model.Money
+import com.shoetrack.domain.notebook.NotebookEntry
 import com.shoetrack.domain.usecase.NewLayaway
 import com.shoetrack.domain.usecase.SavePhotoUseCase
 import com.shoetrack.domain.usecase.SearchCustomersUseCase
@@ -21,6 +22,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlin.time.Instant
 
 data class NewLayawayUiState(
     val customerName: String = "",
@@ -28,6 +32,10 @@ data class NewLayawayUiState(
     val productDescription: String = "",
     val price: String = "",
     val initialPayment: String = "",
+    /** True when the form was filled from a photo of the notebook, so the date of the last payment is shown. */
+    val isFromNotebook: Boolean = false,
+    /** When the last payment was made; null means today. */
+    val lastPaymentAt: Instant? = null,
     val photoName: String? = null,
     val customerSuggestions: List<Customer> = emptyList(),
     val selectedCustomerId: String? = null,
@@ -65,11 +73,12 @@ class NewLayawayViewModel(
     private val startLayaway: StartLayawayUseCase,
     private val savePhoto: SavePhotoUseCase,
     private val searchCustomers: SearchCustomersUseCase,
+    prefill: NotebookEntry? = null,
 ) : ViewModel() {
 
     private var suggestionsJob: Job? = null
 
-    private val _uiState = MutableStateFlow(NewLayawayUiState())
+    private val _uiState = MutableStateFlow(prefill?.toUiState() ?: NewLayawayUiState())
     val uiState: StateFlow<NewLayawayUiState> = _uiState.asStateFlow()
 
     private val _events = Channel<NewLayawayEvent>(Channel.BUFFERED)
@@ -109,6 +118,8 @@ class NewLayawayViewModel(
     fun onInitialPaymentChange(value: String) =
         _uiState.update { it.copy(initialPayment = value.digitsOnly()) }
 
+    fun onLastPaymentAtChange(date: Instant?) = _uiState.update { it.copy(lastPaymentAt = date) }
+
     fun onPhotoPicked(imageBytes: ByteArray) {
         viewModelScope.launch {
             runCatchingExceptCancellation { savePhoto(imageBytes) }
@@ -139,6 +150,7 @@ class NewLayawayViewModel(
                         productPrice = price,
                         initialPayment = state.initialPayment.toMoneyOrNull() ?: Money.ZERO,
                         existingCustomerId = state.selectedCustomerId,
+                        lastPaymentAt = state.lastPaymentAt,
                     ),
                 )
             }
@@ -153,3 +165,14 @@ class NewLayawayViewModel(
 
     private fun String.digitsOnly(): String = filter(Char::isDigit).take(MAX_MONEY_DIGITS)
 }
+
+private fun NotebookEntry.toUiState() = NewLayawayUiState(
+    customerName = customerName,
+    productDescription = productDescription,
+    price = totalPrice.toDigits(),
+    initialPayment = paidAmount.toDigits(),
+    isFromNotebook = true,
+    lastPaymentAt = lastPaymentDate?.atStartOfDayIn(TimeZone.currentSystemDefault()),
+)
+
+private fun Money?.toDigits(): String = this?.let { (it.cents / 100).toString() }.orEmpty()

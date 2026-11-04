@@ -22,20 +22,27 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -57,14 +64,22 @@ import com.shoetrack.presentation.components.AppIcon
 import com.shoetrack.presentation.components.BackButton
 import com.shoetrack.presentation.components.IconShape
 import com.shoetrack.presentation.components.SneakerIllustration
+import com.shoetrack.presentation.format.formatAsDate
+import com.shoetrack.presentation.format.isPickableDay
+import com.shoetrack.presentation.format.pickedDateToInstant
+import com.shoetrack.presentation.format.toPickerMillis
 import com.shoetrack.presentation.photo.ShoePhoto
 import com.shoetrack.presentation.photo.rememberPhotoPicker
 import com.shoetrack.presentation.theme.Colorway
 import com.shoetrack.presentation.theme.ShoeTrackTheme
+import kotlin.time.Clock
+import kotlin.time.Instant
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import shoetrack.shared.generated.resources.Res
+import shoetrack.shared.generated.resources.cancel
 import shoetrack.shared.generated.resources.choose_photo
+import shoetrack.shared.generated.resources.confirm
 import shoetrack.shared.generated.resources.customer_name
 import shoetrack.shared.generated.resources.customer_phone
 import shoetrack.shared.generated.resources.error_photo_failed
@@ -74,8 +89,12 @@ import shoetrack.shared.generated.resources.initial_payment
 import shoetrack.shared.generated.resources.initial_payment_exceeds_price
 import shoetrack.shared.generated.resources.invalid_phone
 import shoetrack.shared.generated.resources.is_existing_customer
+import shoetrack.shared.generated.resources.last_payment_date
+import shoetrack.shared.generated.resources.last_payment_hint
 import shoetrack.shared.generated.resources.new_layaway
 import shoetrack.shared.generated.resources.new_layaway
+import shoetrack.shared.generated.resources.notebook_review_hint
+import shoetrack.shared.generated.resources.notebook_review_title
 import shoetrack.shared.generated.resources.optional
 import shoetrack.shared.generated.resources.photo_hint
 import shoetrack.shared.generated.resources.price
@@ -84,6 +103,7 @@ import shoetrack.shared.generated.resources.required_field
 import shoetrack.shared.generated.resources.save
 import shoetrack.shared.generated.resources.take_photo
 import shoetrack.shared.generated.resources.take_photo
+import shoetrack.shared.generated.resources.today
 
 // The viewfinder stays dark in both themes, like a camera screen.
 private val ViewfinderColor = Color(0xFF101437)
@@ -121,6 +141,7 @@ fun NewLayawayScreen(
         onProductDescriptionChange = viewModel::onProductDescriptionChange,
         onPriceChange = viewModel::onPriceChange,
         onInitialPaymentChange = viewModel::onInitialPaymentChange,
+        onLastPaymentAtChange = viewModel::onLastPaymentAtChange,
         onTakePhoto = photoPicker::takePhoto,
         onPickPhoto = photoPicker::pickFromGallery,
         onSave = viewModel::save,
@@ -138,6 +159,7 @@ internal fun NewLayawayContent(
     onProductDescriptionChange: (String) -> Unit,
     onPriceChange: (String) -> Unit,
     onInitialPaymentChange: (String) -> Unit,
+    onLastPaymentAtChange: (Instant?) -> Unit,
     onTakePhoto: () -> Unit,
     onPickPhoto: () -> Unit,
     onSave: () -> Unit,
@@ -156,6 +178,7 @@ internal fun NewLayawayContent(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Header(onBack)
+            if (uiState.isFromNotebook) NotebookReviewNotice()
             PhotoSection(
                 photoName = uiState.photoName,
                 onTakePhoto = onTakePhoto,
@@ -208,6 +231,71 @@ internal fun NewLayawayContent(
                     modifier = Modifier.weight(1f),
                 )
             }
+            if (uiState.isFromNotebook) LastPaymentDateField(uiState.lastPaymentAt, onLastPaymentAtChange)
+        }
+    }
+}
+
+@Composable
+private fun NotebookReviewNotice() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(ShoeTrackTheme.colors.sun.copy(alpha = 0.25f))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(stringResource(Res.string.notebook_review_title), style = MaterialTheme.typography.titleSmall)
+        Text(stringResource(Res.string.notebook_review_hint), style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LastPaymentDateField(lastPaymentAt: Instant?, onChange: (Instant?) -> Unit) {
+    var isPickerOpen by remember { mutableStateOf(false) }
+    Box {
+        FormField(
+            label = stringResource(Res.string.last_payment_date),
+            value = lastPaymentAt?.formatAsDate() ?: stringResource(Res.string.today),
+            onValueChange = {},
+            readOnly = true,
+        )
+        // The text field would swallow taps, so a transparent layer on top opens the picker.
+        Box(
+            Modifier
+                .matchParentSize()
+                .clip(RoundedCornerShape(16.dp))
+                .clickable(role = Role.Button) { isPickerOpen = true },
+        )
+    }
+    Text(
+        text = stringResource(Res.string.last_payment_hint),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 4.dp),
+    )
+
+    if (isPickerOpen) {
+        val now = remember { Clock.System.now() }
+        val pickerState = rememberDatePickerState(
+            initialSelectedDateMillis = (lastPaymentAt ?: now).toPickerMillis(),
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long) = isPickableDay(utcTimeMillis, now)
+            },
+        )
+        DatePickerDialog(
+            onDismissRequest = { isPickerOpen = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    onChange(pickerState.selectedDateMillis?.pickedDateToInstant())
+                    isPickerOpen = false
+                }) { Text(stringResource(Res.string.confirm)) }
+            },
+            dismissButton = { TextButton(onClick = { isPickerOpen = false }) { Text(stringResource(Res.string.cancel)) } },
+        ) {
+            DatePicker(state = pickerState)
         }
     }
 }
@@ -371,6 +459,7 @@ private fun FormField(
     keyboardType: KeyboardType = KeyboardType.Text,
     placeholder: String? = null,
     errorMessage: String? = null,
+    readOnly: Boolean = false,
 ) {
     TextField(
         value = value,
@@ -378,6 +467,7 @@ private fun FormField(
         label = { Text(label, maxLines = 1) },
         placeholder = placeholder?.let { hint -> { Text(hint) } },
         singleLine = true,
+        readOnly = readOnly,
         isError = errorMessage != null,
         supportingText = errorMessage?.let { message -> { Text(message) } },
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
@@ -408,6 +498,7 @@ private fun NewLayawayContentPreview() {
             onProductDescriptionChange = {},
             onPriceChange = {},
             onInitialPaymentChange = {},
+            onLastPaymentAtChange = {},
             onTakePhoto = {},
             onPickPhoto = {},
             onSave = {},

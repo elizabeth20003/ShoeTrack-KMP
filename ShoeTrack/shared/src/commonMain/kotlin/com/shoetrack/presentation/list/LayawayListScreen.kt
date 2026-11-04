@@ -32,6 +32,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
@@ -85,6 +86,7 @@ import shoetrack.shared.generated.resources.layaways_title
 import shoetrack.shared.generated.resources.new_layaway
 import shoetrack.shared.generated.resources.no_results
 import shoetrack.shared.generated.resources.owed_summary
+import shoetrack.shared.generated.resources.scan_notebook
 import shoetrack.shared.generated.resources.search_hint
 import shoetrack.shared.generated.resources.state_overdue
 import shoetrack.shared.generated.resources.sync_failed
@@ -102,13 +104,14 @@ private val FullWidth = GridItemSpan(1)
 fun LayawayListScreen(
     viewModel: LayawayListViewModel,
     onNewLayaway: () -> Unit,
+    onScanNotebook: () -> Unit,
     onOpenLayaway: (String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val query by viewModel.query.collectAsState()
     val syncStatus by viewModel.syncStatus.collectAsState()
     LayawayListContent(
-        uiState, query, syncStatus, viewModel::onQueryChange, viewModel::onFilterChange, onNewLayaway, onOpenLayaway,
+        uiState, query, syncStatus, viewModel::onQueryChange, viewModel::onFilterChange, onNewLayaway, onScanNotebook, onOpenLayaway,
     )
 }
 
@@ -120,6 +123,7 @@ internal fun LayawayListContent(
     onQueryChange: (String) -> Unit,
     onFilterChange: (LayawayFilter) -> Unit,
     onNewLayaway: () -> Unit,
+    onScanNotebook: () -> Unit,
     onOpenLayaway: (String) -> Unit,
 ) {
     Scaffold(
@@ -149,7 +153,7 @@ internal fun LayawayListContent(
                     )
 
                 is LayawayListUiState.Loaded ->
-                    LayawayGrid(uiState, query, syncStatus, onQueryChange, onFilterChange, onOpenLayaway)
+                    LayawayGrid(uiState, query, syncStatus, onQueryChange, onFilterChange, onScanNotebook, onOpenLayaway)
             }
         }
     }
@@ -162,6 +166,7 @@ private fun LayawayGrid(
     syncStatus: SyncStatus,
     onQueryChange: (String) -> Unit,
     onFilterChange: (LayawayFilter) -> Unit,
+    onScanNotebook: () -> Unit,
     onOpenLayaway: (String) -> Unit,
 ) {
     LazyVerticalGrid(
@@ -179,6 +184,7 @@ private fun LayawayGrid(
         } else {
             item(span = { FullWidth }) { OwedHero(state.totals) }
             item(span = { FullWidth }) { SearchField(query, onQueryChange) }
+            item(span = { FullWidth }) { ScanNotebookButton(onScanNotebook) }
             item(span = { FullWidth }) { FilterChips(state.filter, onFilterChange) }
             layawayCards(state.layaways, onOpenLayaway)
         }
@@ -312,6 +318,19 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
         ),
         modifier = Modifier.fillMaxWidth(),
     )
+}
+
+@Composable
+private fun ScanNotebookButton(onClick: () -> Unit) {
+    FilledTonalButton(
+        onClick = onClick,
+        shape = RoundedCornerShape(18.dp),
+        modifier = Modifier.fillMaxWidth().height(48.dp),
+    ) {
+        AppIcon(IconShape.Camera, MaterialTheme.colorScheme.primary, size = 22.dp)
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(Res.string.scan_notebook), style = MaterialTheme.typography.labelLarge)
+    }
 }
 
 @Composable
@@ -476,6 +495,7 @@ private fun LayawayListContentPreview() {
             onQueryChange = {},
             onFilterChange = {},
             onNewLayaway = {},
+            onScanNotebook = {},
             onOpenLayaway = {},
         )
     }

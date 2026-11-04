@@ -9,7 +9,10 @@ import java.io.File
 
 /** Desktop has no camera, so both actions open a file chooser. */
 @Composable
-actual fun rememberPhotoPicker(onPhotoPicked: (ByteArray) -> Unit): PhotoPicker {
+actual fun rememberPhotoPicker(
+    onPhotoPicked: (ByteArray) -> Unit,
+    @Suppress("UNUSED_PARAMETER") maxSidePx: Int,
+): PhotoPicker {
     val currentOnPhotoPicked = rememberUpdatedState(onPhotoPicked)
     return remember {
         object : PhotoPicker {

@@ -9,6 +9,8 @@ import com.shoetrack.domain.model.OverduePolicy
 import com.shoetrack.domain.model.Payment
 import com.shoetrack.domain.model.Product
 import com.shoetrack.domain.model.SyncSnapshot
+import com.shoetrack.domain.notebook.NotebookEntry
+import com.shoetrack.domain.repository.AiKeyRepository
 import com.shoetrack.domain.repository.CustomerRepository
 import com.shoetrack.domain.repository.LayawayRepository
 import com.shoetrack.domain.repository.ProductRepository
@@ -16,6 +18,8 @@ import com.shoetrack.domain.repository.SyncRepository
 import com.shoetrack.domain.service.IdGenerator
 import com.shoetrack.domain.service.OverdueReminderScheduler
 import com.shoetrack.domain.service.PhotoStorage
+import com.shoetrack.domain.service.NotebookReader
+import com.shoetrack.domain.service.TextRecognizer
 import com.shoetrack.domain.sync.SyncEngine
 import com.shoetrack.domain.sync.SyncStatus
 import com.shoetrack.domain.usecase.GetLayawayDetailUseCase
@@ -184,4 +188,30 @@ class FakeSyncEngine : SyncEngine {
     override fun start() = Unit
 
     override fun stop() = Unit
+}
+
+class FakeTextRecognizer(var text: String = "", var fails: Boolean = false) : TextRecognizer {
+    override suspend fun recognize(image: ByteArray): String {
+        if (fails) throw IllegalStateException("Recognition failed")
+        return text
+    }
+}
+
+class FakeNotebookReader(var entry: NotebookEntry = NotebookEntry(), var fails: Boolean = false) : NotebookReader {
+    var reads = 0
+        private set
+
+    override suspend fun read(image: ByteArray): NotebookEntry {
+        reads++
+        if (fails) throw IllegalStateException("Service unreachable")
+        return entry
+    }
+}
+
+class FakeAiKeyRepository(var stored: String? = null) : AiKeyRepository {
+    override suspend fun key(): String? = stored
+
+    override suspend fun save(key: String?) {
+        stored = key?.trim()?.takeIf { it.isNotEmpty() }
+    }
 }
