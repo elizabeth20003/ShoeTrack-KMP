@@ -8,9 +8,12 @@ import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Money
 import com.shoetrack.domain.usecase.EvaluateOverdueUseCase
 import com.shoetrack.domain.usecase.ObserveLayawaysUseCase
+import com.shoetrack.domain.usecase.PairWithDeviceUseCase
 import com.shoetrack.domain.usecase.RefreshOverdueUseCase
+import com.shoetrack.domain.sync.PairingCode
 import com.shoetrack.presentation.list.LayawayListUiState
 import com.shoetrack.presentation.list.LayawayListViewModel
+import com.shoetrack.presentation.list.PairingState
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -24,10 +27,13 @@ class LayawayListViewModelTest : MainDispatcherTest() {
     private val today = Instant.parse("2026-03-01T00:00:00Z")
     private val layaways = FakeLayawayRepository()
 
+    private val syncEngine = FakeSyncEngine()
+
     private fun viewModel() = LayawayListViewModel(
         observeLayaways = ObserveLayawaysUseCase(layaways),
         refreshOverdue = RefreshOverdueUseCase(layaways, EvaluateOverdueUseCase(), FixedClock(today)),
-        syncEngine = FakeSyncEngine(),
+        syncEngine = syncEngine,
+        pairWithDevice = PairWithDeviceUseCase(syncEngine),
     )
 
     private fun store(
@@ -95,5 +101,35 @@ class LayawayListViewModelTest : MainDispatcherTest() {
         viewModel()
 
         assertEquals(LayawayState.Overdue, layaways.layaways["stale"]?.state)
+    }
+
+    @Test
+    fun pairsWithTheDeviceBehindAValidCode() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.pair("shoetrack:1:192.168.1.30:45872")
+
+        assertEquals(PairingState.Paired, viewModel.pairingState.value)
+        assertEquals(listOf(PairingCode("192.168.1.30", 45872)), syncEngine.pairedWith)
+    }
+
+    @Test
+    fun reportsWhenTheOtherDeviceCannotBeReached() = runTest {
+        syncEngine.pairingSucceeds = false
+        val viewModel = viewModel()
+
+        viewModel.pair("shoetrack:1:192.168.1.30:45872")
+
+        assertEquals(PairingState.Failed, viewModel.pairingState.value)
+    }
+
+    @Test
+    fun rejectsATextThatIsNotAPairingCode() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.pair("not a code")
+
+        assertEquals(PairingState.Invalid, viewModel.pairingState.value)
+        assertEquals(emptyList(), syncEngine.pairedWith)
     }
 }

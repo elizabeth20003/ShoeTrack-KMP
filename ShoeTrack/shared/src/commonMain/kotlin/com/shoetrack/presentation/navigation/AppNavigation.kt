@@ -18,6 +18,7 @@ import com.shoetrack.presentation.list.LayawayListViewModel
 import com.shoetrack.presentation.scan.ScanScreen
 import com.shoetrack.presentation.scan.ScanViewModel
 import kotlinx.datetime.LocalDate
+import org.koin.core.parameter.parametersOf
 import org.koin.mp.KoinPlatform
 
 @Composable
@@ -37,7 +38,7 @@ fun AppNavigation(
 
     NavHost(navController = navController, startDestination = LayawayListRoute) {
         composable<LayawayListRoute> {
-            val viewModel = viewModel { LayawayListViewModel(koin.get(), koin.get(), koin.get()) }
+            val viewModel = viewModel { koin.get<LayawayListViewModel>() }
             LayawayListScreen(
                 viewModel = viewModel,
                 onNewLayaway = { navController.navigate(NewLayawayRoute()) },
@@ -47,7 +48,7 @@ fun AppNavigation(
         }
         composable<NewLayawayRoute> { entry ->
             val prefill = entry.toRoute<NewLayawayRoute>().toNotebookEntry()
-            val viewModel = viewModel { NewLayawayViewModel(koin.get(), koin.get(), koin.get(), prefill) }
+            val viewModel = viewModel { koin.get<NewLayawayViewModel> { parametersOf(prefill) } }
             NewLayawayScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() },
@@ -55,7 +56,7 @@ fun AppNavigation(
             )
         }
         composable<ScanRoute> {
-            val viewModel = viewModel { ScanViewModel(koin.get(), koin.get(), koin.get(), koin.get()) }
+            val viewModel = viewModel { koin.get<ScanViewModel>() }
             ScanScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() },
@@ -64,7 +65,7 @@ fun AppNavigation(
         }
         composable<LayawayDetailRoute> { entry ->
             val layawayId = entry.toRoute<LayawayDetailRoute>().id
-            val viewModel = viewModel { LayawayDetailViewModel(layawayId, koin.get(), koin.get(), koin.get(), koin.get()) }
+            val viewModel = viewModel { koin.get<LayawayDetailViewModel> { parametersOf(layawayId) } }
             LayawayDetailScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
         }
     }

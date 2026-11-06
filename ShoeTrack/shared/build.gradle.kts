@@ -52,6 +52,7 @@ kotlin {
             implementation(libs.androidx.core.ktx)
             implementation(libs.androidx.work.runtime)
             implementation(libs.mlkit.text.recognition)
+            implementation(libs.play.services.code.scanner)
             implementation(libs.sqldelight.android.driver)
         }
         commonMain.dependencies {
@@ -86,6 +87,9 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.sqldelight.native.driver)
+        }
+        jvmTest.dependencies {
+            implementation(libs.zxing.core)
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.java)

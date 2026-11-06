@@ -86,4 +86,15 @@
     <string name="ai_enabled">AI reading is on</string>
     <string name="ai_key_remove">Remove key</string>
     <string name="ai_unavailable">The AI could not be reached, so the phone read the photo.</string>
+    <string name="close">Close</string>
+    <string name="pair_title">Link a device</string>
+    <string name="pair_hint">Both phones must be on the same Wi-Fi. Show this code on one and scan it with the other.</string>
+    <string name="pair_no_network">Connect to a Wi-Fi network to link devices.</string>
+    <string name="pair_scan">Scan the other device's QR</string>
+    <string name="pair_code_label">Or paste its code</string>
+    <string name="pair_connect">Link</string>
+    <string name="pair_connecting">Linking…</string>
+    <string name="pair_paired">Linked! Your data is syncing.</string>
+    <string name="pair_failed">Could not reach that device. Check that it is on the same Wi-Fi and has ShoeTrack open.</string>
+    <string name="pair_invalid">That is not a ShoeTrack code.</string>
 </resources>

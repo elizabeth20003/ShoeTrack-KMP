@@ -15,7 +15,13 @@ data class SyncStatus(
 interface SyncEngine {
     val status: StateFlow<SyncStatus>
 
+    /** How other devices can reach this one, or null while the device has no local network address. */
+    val pairingCode: StateFlow<PairingCode?>
+
     fun start()
 
     fun stop()
+
+    /** Connects to the device behind [code] and keeps syncing with it. Returns whether the first sync worked. */
+    suspend fun pairWith(code: PairingCode): Boolean
 }

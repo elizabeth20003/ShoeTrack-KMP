@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.shoetrack.domain.model.LayawaySummary
 import com.shoetrack.domain.model.LayawayTotals
 import com.shoetrack.domain.model.totals
+import com.shoetrack.domain.sync.PairingCode
 import com.shoetrack.domain.sync.SyncEngine
 import com.shoetrack.domain.sync.SyncStatus
 import com.shoetrack.domain.usecase.ObserveLayawaysUseCase
+import com.shoetrack.domain.usecase.PairWithDeviceUseCase
+import com.shoetrack.domain.usecase.PairingResult
 import com.shoetrack.domain.usecase.RefreshOverdueUseCase
 import com.shoetrack.presentation.common.runCatchingExceptCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,13 +34,38 @@ sealed interface LayawayListUiState {
     data object Error : LayawayListUiState
 }
 
+enum class PairingState { Idle, Connecting, Paired, Failed, Invalid }
+
 class LayawayListViewModel(
     observeLayaways: ObserveLayawaysUseCase,
     private val refreshOverdue: RefreshOverdueUseCase,
     syncEngine: SyncEngine,
+    private val pairWithDevice: PairWithDeviceUseCase,
 ) : ViewModel() {
 
     val syncStatus: StateFlow<SyncStatus> = syncEngine.status
+    val pairingCode: StateFlow<PairingCode?> = syncEngine.pairingCode
+
+    private val _pairingState = MutableStateFlow(PairingState.Idle)
+    val pairingState: StateFlow<PairingState> = _pairingState.asStateFlow()
+
+    /** Links with the device whose pairing code, as read from its QR or typed, is [text]. */
+    fun pair(text: String) {
+        if (_pairingState.value == PairingState.Connecting) return
+        _pairingState.value = PairingState.Connecting
+        viewModelScope.launch {
+            val result = runCatchingExceptCancellation { pairWithDevice(text) }.getOrDefault(PairingResult.Unreachable)
+            _pairingState.value = when (result) {
+                PairingResult.Paired -> PairingState.Paired
+                PairingResult.Unreachable -> PairingState.Failed
+                PairingResult.InvalidCode -> PairingState.Invalid
+            }
+        }
+    }
+
+    fun dismissPairing() {
+        _pairingState.value = PairingState.Idle
+    }
 
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()

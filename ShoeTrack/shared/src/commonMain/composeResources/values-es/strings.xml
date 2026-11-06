@@ -86,4 +86,15 @@
     <string name="ai_enabled">La lectura con IA está activa</string>
     <string name="ai_key_remove">Quitar clave</string>
     <string name="ai_unavailable">No se pudo usar la IA, así que el teléfono leyó la foto.</string>
+    <string name="close">Cerrar</string>
+    <string name="pair_title">Vincular dispositivo</string>
+    <string name="pair_hint">Los dos celulares deben estar en el mismo Wi-Fi. Muestra este código en uno y escanéalo con el otro.</string>
+    <string name="pair_no_network">Conéctate a una red Wi-Fi para vincular dispositivos.</string>
+    <string name="pair_scan">Escanear el QR del otro dispositivo</string>
+    <string name="pair_code_label">O pega su código</string>
+    <string name="pair_connect">Vincular</string>
+    <string name="pair_connecting">Vinculando…</string>
+    <string name="pair_paired">¡Vinculado! Tus datos se están sincronizando.</string>
+    <string name="pair_failed">No se pudo conectar. Revisa que esté en el mismo Wi-Fi y con ShoeTrack abierto.</string>
+    <string name="pair_invalid">Ese no es un código de ShoeTrack.</string>
 </resources>

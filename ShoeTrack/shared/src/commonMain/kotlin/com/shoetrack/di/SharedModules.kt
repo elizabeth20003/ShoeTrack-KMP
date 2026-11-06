@@ -14,6 +14,11 @@ import com.shoetrack.data.sync.LanSyncEngine
 import com.shoetrack.data.sync.SyncSession
 import com.shoetrack.db.ShoeTrackDatabase
 import com.shoetrack.domain.model.OverduePolicy
+import com.shoetrack.domain.notebook.NotebookEntry
+import com.shoetrack.presentation.create.NewLayawayViewModel
+import com.shoetrack.presentation.detail.LayawayDetailViewModel
+import com.shoetrack.presentation.list.LayawayListViewModel
+import com.shoetrack.presentation.scan.ScanViewModel
 import com.shoetrack.domain.repository.AiKeyRepository
 import com.shoetrack.domain.repository.CustomerRepository
 import com.shoetrack.domain.repository.LayawayRepository
@@ -32,6 +37,7 @@ import com.shoetrack.domain.usecase.CreateLayawayUseCase
 import com.shoetrack.domain.usecase.EvaluateOverdueUseCase
 import com.shoetrack.domain.usecase.GetLayawayDetailUseCase
 import com.shoetrack.domain.usecase.ObserveLayawaysUseCase
+import com.shoetrack.domain.usecase.PairWithDeviceUseCase
 import com.shoetrack.domain.usecase.LoadPhotoUseCase
 import com.shoetrack.domain.usecase.ProcessPaymentUseCase
 import com.shoetrack.domain.usecase.RefreshOverdueUseCase
@@ -104,6 +110,7 @@ private fun domainModule(deviceId: String): Module = module {
             clock = get(),
         )
     }
+    factory { PairWithDeviceUseCase(syncEngine = get()) }
     factory { RefreshOverdueUseCase(layawayRepository = get(), evaluateOverdue = get(), clock = get()) }
     factory { ObserveLayawaysUseCase(get()) }
     factory { SavePhotoUseCase(get()) }
@@ -147,6 +154,36 @@ private fun dataModule(
     }
 }
 
+// ViewModels are factories: each screen gets its own, and the ViewModel store keeps it alive.
+private fun presentationModule(): Module = module {
+    factory {
+        LayawayListViewModel(
+            observeLayaways = get(),
+            refreshOverdue = get(),
+            syncEngine = get(),
+            pairWithDevice = get(),
+        )
+    }
+    factory { params ->
+        NewLayawayViewModel(
+            startLayaway = get(),
+            savePhoto = get(),
+            searchCustomers = get(),
+            prefill = params.getOrNull<NotebookEntry>(),
+        )
+    }
+    factory { params ->
+        LayawayDetailViewModel(
+            layawayId = params.get<String>(),
+            getLayawayDetail = get(),
+            registerPayment = get(),
+            overduePolicy = get(),
+            clock = get(),
+        )
+    }
+    factory { ScanViewModel(recognizer = get(), cloudReader = get(), keys = get(), clock = get()) }
+}
+
 fun initKoin(
     driverFactory: DatabaseDriverFactory,
     reminderScheduler: OverdueReminderScheduler,
@@ -157,6 +194,7 @@ fun initKoin(
         modules(
             domainModule(deviceId),
             dataModule(driverFactory, photosDirectory, deviceId),
+            presentationModule(),
             module { single<OverdueReminderScheduler> { reminderScheduler } },
         )
     }

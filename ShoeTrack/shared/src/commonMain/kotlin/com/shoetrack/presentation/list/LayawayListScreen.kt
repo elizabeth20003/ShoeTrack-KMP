@@ -6,6 +6,11 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import com.shoetrack.presentation.pairing.PairingDialog
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -110,9 +115,24 @@ fun LayawayListScreen(
     val uiState by viewModel.uiState.collectAsState()
     val query by viewModel.query.collectAsState()
     val syncStatus by viewModel.syncStatus.collectAsState()
+    val pairingCode by viewModel.pairingCode.collectAsState()
+    val pairingState by viewModel.pairingState.collectAsState()
+    var showPairing by remember { mutableStateOf(false) }
     LayawayListContent(
         uiState, query, syncStatus, viewModel::onQueryChange, viewModel::onFilterChange, onNewLayaway, onScanNotebook, onOpenLayaway,
+        onSyncClick = { showPairing = true },
     )
+    if (showPairing) {
+        PairingDialog(
+            code = pairingCode,
+            state = pairingState,
+            onPair = viewModel::pair,
+            onDismiss = {
+                viewModel.dismissPairing()
+                showPairing = false
+            },
+        )
+    }
 }
 
 @Composable
@@ -125,6 +145,7 @@ internal fun LayawayListContent(
     onNewLayaway: () -> Unit,
     onScanNotebook: () -> Unit,
     onOpenLayaway: (String) -> Unit,
+    onSyncClick: () -> Unit = {},
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -153,7 +174,7 @@ internal fun LayawayListContent(
                     )
 
                 is LayawayListUiState.Loaded ->
-                    LayawayGrid(uiState, query, syncStatus, onQueryChange, onFilterChange, onScanNotebook, onOpenLayaway)
+                    LayawayGrid(uiState, query, syncStatus, onQueryChange, onFilterChange, onScanNotebook, onOpenLayaway, onSyncClick)
             }
         }
     }
@@ -168,6 +189,7 @@ private fun LayawayGrid(
     onFilterChange: (LayawayFilter) -> Unit,
     onScanNotebook: () -> Unit,
     onOpenLayaway: (String) -> Unit,
+    onSyncClick: () -> Unit,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(1),
@@ -176,7 +198,7 @@ private fun LayawayGrid(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
-        item(span = { FullWidth }) { Header(syncStatus) }
+        item(span = { FullWidth }) { Header(syncStatus, onSyncClick) }
         if (!state.hasAnyLayaways) {
             item(span = { FullWidth }) {
                 EmptyState(stringResource(Res.string.empty_title), stringResource(Res.string.empty_message))
@@ -202,7 +224,7 @@ private fun LazyGridScope.layawayCards(layaways: List<LayawaySummary>, onOpen: (
 }
 
 @Composable
-private fun Header(status: SyncStatus) {
+private fun Header(status: SyncStatus, onSyncClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -216,13 +238,13 @@ private fun Header(status: SyncStatus) {
         )
         // The title never wraps: the pill takes whatever width is left and shortens its text.
         Box(Modifier.weight(1f).padding(start = 12.dp), contentAlignment = Alignment.CenterEnd) {
-            SyncPill(status)
+            SyncPill(status, onSyncClick)
         }
     }
 }
 
 @Composable
-private fun SyncPill(status: SyncStatus) {
+private fun SyncPill(status: SyncStatus, onClick: () -> Unit) {
     val text = when {
         status.hasFailed -> stringResource(Res.string.sync_failed)
         status.isSyncing -> stringResource(Res.string.sync_in_progress)
@@ -240,6 +262,7 @@ private fun SyncPill(status: SyncStatus) {
         modifier = Modifier
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -20,6 +20,7 @@ import com.shoetrack.domain.service.OverdueReminderScheduler
 import com.shoetrack.domain.service.PhotoStorage
 import com.shoetrack.domain.service.NotebookReader
 import com.shoetrack.domain.service.TextRecognizer
+import com.shoetrack.domain.sync.PairingCode
 import com.shoetrack.domain.sync.SyncEngine
 import com.shoetrack.domain.sync.SyncStatus
 import com.shoetrack.domain.usecase.GetLayawayDetailUseCase
@@ -182,8 +183,15 @@ class FakeSyncRepository(
     }
 }
 
-class FakeSyncEngine : SyncEngine {
+class FakeSyncEngine(var pairingSucceeds: Boolean = true) : SyncEngine {
     override val status: StateFlow<SyncStatus> = MutableStateFlow(SyncStatus())
+    override val pairingCode: StateFlow<PairingCode?> = MutableStateFlow(PairingCode("192.168.1.20", 45872))
+    val pairedWith = mutableListOf<PairingCode>()
+
+    override suspend fun pairWith(code: PairingCode): Boolean {
+        pairedWith += code
+        return pairingSucceeds
+    }
 
     override fun start() = Unit
 
