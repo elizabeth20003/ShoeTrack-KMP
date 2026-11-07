@@ -5,10 +5,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.useContents
 import kotlinx.cinterop.usePinned
+import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSData
 import platform.UIKit.UIApplication
+import platform.UIKit.UIGraphicsBeginImageContextWithOptions
+import platform.UIKit.UIGraphicsEndImageContext
+import platform.UIKit.UIGraphicsGetImageFromCurrentImageContext
 import platform.UIKit.UIImage
+import platform.UIKit.UIImageOrientation
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIImagePickerController
 import platform.UIKit.UIImagePickerControllerDelegateProtocol
@@ -60,12 +66,24 @@ private class PickerDelegate(
     ) {
         val image = didFinishPickingMediaWithInfo[UIImagePickerControllerOriginalImage] as? UIImage
         picker.dismissViewControllerAnimated(true, completion = null)
-        image?.let { UIImageJPEGRepresentation(it, JPEG_QUALITY) }?.let { onPhotoPicked(it.toByteArray()) }
+        image?.uprightCopy()?.let { UIImageJPEGRepresentation(it, JPEG_QUALITY) }?.let { onPhotoPicked(it.toByteArray()) }
     }
 
     override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
         picker.dismissViewControllerAnimated(true, completion = null)
     }
+}
+
+// The camera stores photos sideways plus a rotation flag. Other platforms ignore that flag, so the
+// rotation is baked into the pixels before the photo is saved and synced.
+@OptIn(ExperimentalForeignApi::class)
+private fun UIImage.uprightCopy(): UIImage {
+    if (imageOrientation == UIImageOrientation.UIImageOrientationUp) return this
+    UIGraphicsBeginImageContextWithOptions(size, false, scale)
+    drawInRect(size.useContents { CGRectMake(0.0, 0.0, width, height) })
+    val redrawn = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+    return redrawn ?: this
 }
 
 @OptIn(ExperimentalForeignApi::class)
