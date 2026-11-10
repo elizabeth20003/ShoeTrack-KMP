@@ -18,7 +18,6 @@ import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 class StartLayawayUseCaseTest {
-
     private val now = Instant.parse("2026-02-01T00:00:00Z")
     private val customers = FakeCustomerRepository()
     private val products = FakeProductRepository()
@@ -27,24 +26,26 @@ class StartLayawayUseCaseTest {
     private val clock = FixedClock(now)
     private val scheduler = FakeOverdueReminderScheduler()
     private val scheduleReminder = scheduleReminderOf(layaways, customers, products, scheduler, clock)
-    private val startLayaway = StartLayawayUseCase(
-        customerRepository = customers,
-        productRepository = products,
-        layawayRepository = layaways,
-        createLayaway = CreateLayawayUseCase(),
-        registerPayment = RegisterPaymentUseCase(
+    private val startLayaway =
+        StartLayawayUseCase(
+            customerRepository = customers,
+            productRepository = products,
             layawayRepository = layaways,
-            processPayment = ProcessPaymentUseCase(),
+            createLayaway = CreateLayawayUseCase(),
+            registerPayment =
+            RegisterPaymentUseCase(
+                layawayRepository = layaways,
+                processPayment = ProcessPaymentUseCase(),
+                idGenerator = idGenerator,
+                clock = clock,
+                deviceId = "device-1",
+                scheduleReminder = scheduleReminder,
+            ),
+            scheduleReminder = scheduleReminder,
+            refreshOverdue = RefreshOverdueUseCase(layaways, EvaluateOverdueUseCase(), clock),
             idGenerator = idGenerator,
             clock = clock,
-            deviceId = "device-1",
-            scheduleReminder = scheduleReminder,
-        ),
-        scheduleReminder = scheduleReminder,
-        refreshOverdue = RefreshOverdueUseCase(layaways, EvaluateOverdueUseCase(), clock),
-        idGenerator = idGenerator,
-        clock = clock,
-    )
+        )
 
     private fun request(initialPayment: Money = Money.ZERO) = NewLayaway(
         customerName = "  Ana Perez ",
@@ -59,17 +60,28 @@ class StartLayawayUseCaseTest {
     fun savesCustomerProductAndLayaway() = runTest {
         val result = startLayaway(request())
 
-        assertEquals("Ana Perez", customers.customers.values.single().name)
-        assertEquals("Nike Air Force 42", products.products.values.single().description)
+        assertEquals(
+            "Ana Perez",
+            customers.customers.values
+                .single()
+                .name,
+        )
+        assertEquals(
+            "Nike Air Force 42",
+            products.products.values
+                .single()
+                .description,
+        )
         assertEquals(result, layaways.layaways.values.single())
         assertEquals(Money(100_000), result.remainingBalance)
     }
 
     @Test
     fun aLastPaymentDateOlderThanThirtyDaysStartsTheLayawayOverdueWithoutAReminder() = runTest {
-        val result = startLayaway(
-            request(initialPayment = Money(30_000)).copy(lastPaymentAt = Instant.parse("2025-12-01T00:00:00Z")),
-        )
+        val result =
+            startLayaway(
+                request(initialPayment = Money(30_000)).copy(lastPaymentAt = Instant.parse("2025-12-01T00:00:00Z")),
+            )
 
         assertEquals(LayawayState.Overdue, result.state)
         assertEquals(Instant.parse("2025-12-01T00:00:00Z"), result.lastPaymentAt)
@@ -110,7 +122,12 @@ class StartLayawayUseCaseTest {
     fun storesOnlyTheDigitsOfThePhoneNumber() = runTest {
         startLayaway(request().copy(customerPhone = "300 123 4567"))
 
-        assertEquals("3001234567", customers.customers.values.single().phone)
+        assertEquals(
+            "3001234567",
+            customers.customers.values
+                .single()
+                .phone,
+        )
     }
 
     @Test
@@ -133,15 +150,16 @@ class StartLayawayUseCaseTest {
 
     @Test
     fun schedulesAReminderForTheNewLayaway() = runTest {
-        val layaway = startLayaway(
-            NewLayaway(
-                customerName = "Ana Perez",
-                customerPhone = "3001234567",
-                productDescription = "Nike Air Force 42",
-                productPhotoPath = "",
-                productPrice = Money.fromUnits(100_000),
-            ),
-        )
+        val layaway =
+            startLayaway(
+                NewLayaway(
+                    customerName = "Ana Perez",
+                    customerPhone = "3001234567",
+                    productDescription = "Nike Air Force 42",
+                    productPhotoPath = "",
+                    productPrice = Money.fromUnits(100_000),
+                ),
+            )
 
         assertEquals(setOf(layaway.id), scheduler.scheduled.keys)
     }

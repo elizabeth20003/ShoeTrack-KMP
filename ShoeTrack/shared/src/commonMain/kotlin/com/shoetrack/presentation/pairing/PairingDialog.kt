@@ -44,12 +44,7 @@ import shoetrack.shared.generated.resources.pair_title
 
 /** Shows this device's QR and reads the QR of another one, so both start syncing. */
 @Composable
-fun PairingDialog(
-    code: PairingCode?,
-    state: PairingState,
-    onPair: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
+fun PairingDialog(code: PairingCode?, state: PairingState, onPair: (String) -> Unit, onDismiss: () -> Unit) {
     val scanner = rememberQrScanner(onPair)
     var typedCode by remember { mutableStateOf("") }
     AlertDialog(
@@ -84,13 +79,14 @@ fun PairingDialog(
                         Text(stringResource(Res.string.pair_connect))
                     }
                 }
-                val message = when (state) {
-                    PairingState.Idle -> null
-                    PairingState.Connecting -> Res.string.pair_connecting
-                    PairingState.Paired -> Res.string.pair_paired
-                    PairingState.Failed -> Res.string.pair_failed
-                    PairingState.Invalid -> Res.string.pair_invalid
-                }
+                val message =
+                    when (state) {
+                        PairingState.Idle -> null
+                        PairingState.Connecting -> Res.string.pair_connecting
+                        PairingState.Paired -> Res.string.pair_paired
+                        PairingState.Failed -> Res.string.pair_failed
+                        PairingState.Invalid -> Res.string.pair_invalid
+                    }
                 if (message != null) Text(stringResource(message), style = MaterialTheme.typography.bodyMedium)
             }
         },

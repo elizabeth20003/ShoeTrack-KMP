@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 /** Lets the user bring a photo into the app, from the camera or from existing images. */
 interface PhotoPicker {
     fun takePhoto()
+
     fun pickFromGallery()
 }
 
@@ -19,7 +20,4 @@ const val SCAN_PHOTO_SIDE_PX = 2560
  * Platforms that scale photos keep their longest side at or under [maxSidePx].
  */
 @Composable
-expect fun rememberPhotoPicker(
-    onPhotoPicked: (ByteArray) -> Unit,
-    maxSidePx: Int = STORED_PHOTO_SIDE_PX,
-): PhotoPicker
+expect fun rememberPhotoPicker(onPhotoPicked: (ByteArray) -> Unit, maxSidePx: Int = STORED_PHOTO_SIDE_PX): PhotoPicker

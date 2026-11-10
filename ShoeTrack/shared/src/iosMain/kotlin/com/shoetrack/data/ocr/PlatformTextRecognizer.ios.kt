@@ -23,27 +23,30 @@ actual fun createTextRecognizer(): TextRecognizer = VisionTextRecognizer()
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 private class VisionTextRecognizer : TextRecognizer {
-
     // Vision runs the request on the calling thread, so keep it off the main thread.
     override suspend fun recognize(image: ByteArray): String = withContext(Dispatchers.Default) {
         recognizeBlocking(image)
     }
 
     private suspend fun recognizeBlocking(image: ByteArray): String = suspendCancellableCoroutine { continuation ->
-        val request = VNRecognizeTextRequest { finished, error ->
-            if (error != null) {
-                continuation.resumeWithException(RecognitionException(error))
-                return@VNRecognizeTextRequest
+        val request =
+            VNRecognizeTextRequest { finished, error ->
+                if (error != null) {
+                    continuation.resumeWithException(RecognitionException(error))
+                    return@VNRecognizeTextRequest
+                }
+                val lines =
+                    finished
+                        ?.results
+                        .orEmpty()
+                        .filterIsInstance<VNRecognizedTextObservation>()
+                        .mapNotNull { (it.topCandidates(1uL).firstOrNull() as? VNRecognizedText)?.string }
+                continuation.resume(lines.joinToString("\n"))
+            }.apply {
+                recognitionLevel = VNRequestTextRecognitionLevelAccurate
+                usesLanguageCorrection = true
+                recognitionLanguages = listOf("es-ES", "en-US")
             }
-            val lines = finished?.results.orEmpty()
-                .filterIsInstance<VNRecognizedTextObservation>()
-                .mapNotNull { (it.topCandidates(1uL).firstOrNull() as? VNRecognizedText)?.string }
-            continuation.resume(lines.joinToString("\n"))
-        }.apply {
-            recognitionLevel = VNRequestTextRecognitionLevelAccurate
-            usesLanguageCorrection = true
-            recognitionLanguages = listOf("es-ES", "en-US")
-        }
         val handler = VNImageRequestHandler(data = image.toNSData(), options = emptyMap<Any?, Any?>())
         handler.performRequests(listOf(request), error = null)
     }

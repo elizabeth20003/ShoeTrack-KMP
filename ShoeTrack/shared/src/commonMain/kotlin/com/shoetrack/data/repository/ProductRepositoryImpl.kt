@@ -8,11 +8,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-internal class ProductRepositoryImpl(
-    database: ShoeTrackDatabase,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
-) : ProductRepository {
-
+internal class ProductRepositoryImpl(database: ShoeTrackDatabase, private val dispatcher: CoroutineDispatcher = Dispatchers.Default) :
+    ProductRepository {
     private val queries = database.productQueries
 
     override suspend fun save(product: Product) {

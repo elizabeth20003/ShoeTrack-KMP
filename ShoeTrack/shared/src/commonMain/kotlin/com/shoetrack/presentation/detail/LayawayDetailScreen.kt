@@ -136,12 +136,14 @@ internal fun LayawayDetailContent(
 
                 else -> DetailBody(detail, uiState.daysUntilDue, onBack, onAddPayment)
             }
-            if (detail == null) BackButton(
-                onBack,
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
-            )
+            if (detail == null) {
+                BackButton(
+                    onBack,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
+                )
+            }
         }
     }
 
@@ -149,7 +151,12 @@ internal fun LayawayDetailContent(
         PaymentDialog(
             input = uiState.paymentInput,
             canConfirm = uiState.canConfirmPayment,
-            maxAmount = uiState.detail?.layaway?.remainingBalance?.format().takeIf { uiState.isPaymentTooHigh },
+            maxAmount =
+            uiState.detail
+                ?.layaway
+                ?.remainingBalance
+                ?.format()
+                .takeIf { uiState.isPaymentTooHigh },
             onInputChange = onPaymentInputChange,
             onConfirm = onConfirmPayment,
             onDismiss = onDismissPayment,
@@ -174,14 +181,20 @@ private fun DetailBody(detail: LayawayDetail, daysUntilDue: Int?, onBack: () -> 
             } else {
                 SneakerIllustration(
                     colorway = colorway,
-                    modifier = Modifier.align(Alignment.Center).padding(top = 24.dp).fillMaxWidth(0.82f).rotate(-6f),
+                    modifier =
+                    Modifier
+                        .align(Alignment.Center)
+                        .padding(top = 24.dp)
+                        .fillMaxWidth(0.82f)
+                        .rotate(-6f),
                 )
             }
         }
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(SheetTop))
             Column(
-                modifier = Modifier
+                modifier =
+                Modifier
                     .fillMaxWidth()
                     .heightIn(min = sheetMinHeight)
                     .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
@@ -204,11 +217,11 @@ private fun DetailBody(detail: LayawayDetail, daysUntilDue: Int?, onBack: () -> 
             }
         }
         BackButton(
-                onBack,
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
-            )
+            onBack,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
+        )
         StatusPill(layaway.state, daysUntilDue, Modifier.align(Alignment.TopEnd).padding(16.dp))
     }
 }
@@ -216,20 +229,22 @@ private fun DetailBody(detail: LayawayDetail, daysUntilDue: Int?, onBack: () -> 
 @Composable
 private fun StatusPill(state: LayawayState, daysUntilDue: Int?, modifier: Modifier = Modifier) {
     val colors = ShoeTrackTheme.colors
-    val text = when {
-        state == LayawayState.Overdue -> stringResource(Res.string.state_overdue)
-        state == LayawayState.Completed -> stringResource(Res.string.paid_in_full_pill)
-        state == LayawayState.Cancelled -> stringResource(Res.string.state_cancelled)
-        daysUntilDue == null -> return
-        daysUntilDue == 0 -> stringResource(Res.string.next_payment_today)
-        else -> pluralStringResource(Res.plurals.next_payment_in_days, daysUntilDue, daysUntilDue)
-    }
-    val (background, content) = when (state) {
-        LayawayState.Overdue -> colors.overdueBadge to colors.onOverdueBadge
-        LayawayState.Completed -> colors.doneBadge to colors.onDoneBadge
-        LayawayState.Cancelled -> MaterialTheme.colorScheme.surface to MaterialTheme.colorScheme.onSurface
-        LayawayState.Active -> colors.sun to colors.onSun
-    }
+    val text =
+        when {
+            state == LayawayState.Overdue -> stringResource(Res.string.state_overdue)
+            state == LayawayState.Completed -> stringResource(Res.string.paid_in_full_pill)
+            state == LayawayState.Cancelled -> stringResource(Res.string.state_cancelled)
+            daysUntilDue == null -> return
+            daysUntilDue == 0 -> stringResource(Res.string.next_payment_today)
+            else -> pluralStringResource(Res.plurals.next_payment_in_days, daysUntilDue, daysUntilDue)
+        }
+    val (background, content) =
+        when (state) {
+            LayawayState.Overdue -> colors.overdueBadge to colors.onOverdueBadge
+            LayawayState.Completed -> colors.doneBadge to colors.onDoneBadge
+            LayawayState.Cancelled -> MaterialTheme.colorScheme.surface to MaterialTheme.colorScheme.onSurface
+            LayawayState.Active -> colors.sun to colors.onSun
+        }
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,
@@ -269,11 +284,12 @@ private fun Balance(detail: LayawayDetail) {
 @Composable
 private fun ProgressSection(detail: LayawayDetail) {
     val layaway = detail.layaway
-    val fraction = if (detail.product.totalPrice.isPositive) {
-        (1f - layaway.remainingBalance.cents.toFloat() / detail.product.totalPrice.cents).coerceIn(0f, 1f)
-    } else {
-        0f
-    }
+    val fraction =
+        if (detail.product.totalPrice.isPositive) {
+            (1f - layaway.remainingBalance.cents.toFloat() / detail.product.totalPrice.cents).coerceIn(0f, 1f)
+        } else {
+            0f
+        }
     val color = progressColorFor(layaway.state == LayawayState.Overdue, layaway.state == LayawayState.Completed)
     val percent = stringResource(Res.string.paid_percent, fraction.formatAsPercent())
     Column(Modifier.padding(top = 12.dp, bottom = 20.dp)) {
@@ -312,7 +328,8 @@ private fun PaymentsSection(payments: List<Payment>) {
 private fun PaymentTicket(payment: Payment) {
     val sheetColor = MaterialTheme.colorScheme.surface
     Row(
-        modifier = Modifier
+        modifier =
+        Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.background)
@@ -320,8 +337,7 @@ private fun PaymentTicket(payment: Payment) {
                 val radius = 7.dp.toPx()
                 drawCircle(sheetColor, radius, Offset(0f, size.height / 2))
                 drawCircle(sheetColor, radius, Offset(size.width, size.height / 2))
-            }
-            .padding(horizontal = 18.dp, vertical = 16.dp),
+            }.padding(horizontal = 18.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -350,7 +366,8 @@ private fun PaymentDialog(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 isError = maxAmount != null,
-                supportingText = maxAmount?.let { max ->
+                supportingText =
+                maxAmount?.let { max ->
                     { Text(stringResource(Res.string.payment_exceeds_balance, max)) }
                 },
             )
@@ -370,21 +387,23 @@ private fun PaymentDialog(
 @Composable
 private fun LayawayDetailContentPreview() {
     val date = Instant.parse("2026-10-01T00:00:00Z")
-    val layaway = Layaway(
-        id = "1",
-        customerId = "c1",
-        productId = "p1",
-        remainingBalance = Money.fromUnits(150_000),
-        state = LayawayState.Active,
-        createdAt = date,
-        lastPaymentAt = date,
-        payments = listOf(Payment("pay1", "1", Money.fromUnits(50_000), date, "device")),
-    )
-    val detail = LayawayDetail(
-        layaway = layaway,
-        customer = Customer("c1", "Ana Perez", "3001234567", date),
-        product = Product("p1", "Nike Air Force 42", "", Money.fromUnits(200_000)),
-    )
+    val layaway =
+        Layaway(
+            id = "1",
+            customerId = "c1",
+            productId = "p1",
+            remainingBalance = Money.fromUnits(150_000),
+            state = LayawayState.Active,
+            createdAt = date,
+            lastPaymentAt = date,
+            payments = listOf(Payment("pay1", "1", Money.fromUnits(50_000), date, "device")),
+        )
+    val detail =
+        LayawayDetail(
+            layaway = layaway,
+            customer = Customer("c1", "Ana Perez", "3001234567", date),
+            product = Product("p1", "Nike Air Force 42", "", Money.fromUnits(200_000)),
+        )
     ShoeTrackTheme {
         LayawayDetailContent(
             uiState = LayawayDetailUiState(detail = detail, isLoading = false, daysUntilDue = 18),

@@ -22,33 +22,34 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 class RegisterPaymentUseCaseTest {
-
     private val now = Instant.parse("2026-02-01T00:00:00Z")
     private val repository = FakeLayawayRepository()
     private val customers = FakeCustomerRepository()
     private val products = FakeProductRepository()
     private val scheduler = FakeOverdueReminderScheduler()
-    private val registerPayment = RegisterPaymentUseCase(
-        layawayRepository = repository,
-        processPayment = ProcessPaymentUseCase(),
-        idGenerator = SequentialIdGenerator(),
-        clock = FixedClock(now),
-        deviceId = "device-1",
-        scheduleReminder = scheduleReminderOf(repository, customers, products, scheduler),
-    )
+    private val registerPayment =
+        RegisterPaymentUseCase(
+            layawayRepository = repository,
+            processPayment = ProcessPaymentUseCase(),
+            idGenerator = SequentialIdGenerator(),
+            clock = FixedClock(now),
+            deviceId = "device-1",
+            scheduleReminder = scheduleReminderOf(repository, customers, products, scheduler),
+        )
 
     private fun storedLayaway(balance: Long = 10_000): Layaway {
         customers.customers["customer-1"] = Customer("customer-1", "Ana Perez", "3001234567", now)
         products.products["product-1"] = Product("product-1", "Nike Air Force 42", "", Money(balance))
-        val layaway = Layaway(
-            id = "layaway-1",
-            customerId = "customer-1",
-            productId = "product-1",
-            remainingBalance = Money(balance),
-            state = LayawayState.Active,
-            createdAt = now,
-            lastPaymentAt = now,
-        )
+        val layaway =
+            Layaway(
+                id = "layaway-1",
+                customerId = "customer-1",
+                productId = "product-1",
+                remainingBalance = Money(balance),
+                state = LayawayState.Active,
+                createdAt = now,
+                lastPaymentAt = now,
+            )
         repository.layaways[layaway.id] = layaway
         return layaway
     }

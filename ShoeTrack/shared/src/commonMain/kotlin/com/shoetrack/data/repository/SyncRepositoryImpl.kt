@@ -16,17 +16,27 @@ internal class SyncRepositoryImpl(
     private val clock: Clock = Clock.System,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : SyncRepository {
-
     override suspend fun snapshot(): SyncSnapshot = withContext(dispatcher) {
-        val paymentsByLayaway = database.paymentQueries.selectAllPayments()
-            .executeAsList()
-            .map { it.toDomain() }
-            .groupBy { it.layawayId }
+        val paymentsByLayaway =
+            database.paymentQueries
+                .selectAllPayments()
+                .executeAsList()
+                .map { it.toDomain() }
+                .groupBy { it.layawayId }
 
         SyncSnapshot(
-            customers = database.customerQueries.selectAllCustomers().executeAsList().map { it.toDomain() },
-            products = database.productQueries.selectAllProducts().executeAsList().map { it.toDomain() },
-            layaways = database.layawayQueries.selectAllLayaways().executeAsList().map {
+            customers =
+            database.customerQueries
+                .selectAllCustomers()
+                .executeAsList()
+                .map { it.toDomain() },
+            products =
+            database.productQueries
+                .selectAllProducts()
+                .executeAsList()
+                .map { it.toDomain() },
+            layaways =
+            database.layawayQueries.selectAllLayaways().executeAsList().map {
                 it.toDomain(paymentsByLayaway[it.id].orEmpty())
             },
         )
@@ -37,12 +47,18 @@ internal class SyncRepositoryImpl(
             database.transaction {
                 changes.customers.forEach {
                     database.customerQueries.insertCustomerIfAbsent(
-                        it.id, it.name, it.phone, it.registeredAt.toEpochMilliseconds(),
+                        it.id,
+                        it.name,
+                        it.phone,
+                        it.registeredAt.toEpochMilliseconds(),
                     )
                 }
                 changes.products.forEach {
                     database.productQueries.insertProductIfAbsent(
-                        it.id, it.description, it.photoPath, it.totalPrice.cents,
+                        it.id,
+                        it.description,
+                        it.photoPath,
+                        it.totalPrice.cents,
                     )
                 }
                 changes.layaways.forEach { layaway ->

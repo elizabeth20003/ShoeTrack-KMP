@@ -6,11 +6,11 @@ import com.shoetrack.domain.sync.SyncStatus
 import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.InetSocketAddress
+import io.ktor.network.sockets.ServerSocket
+import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.aSocket
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
-import io.ktor.network.sockets.ServerSocket
-import io.ktor.network.sockets.Socket
 import io.ktor.utils.io.core.buildPacket
 import io.ktor.utils.io.core.readText
 import io.ktor.utils.io.core.writeText
@@ -44,12 +44,8 @@ import kotlin.time.Instant
  * iOS does not allow the broadcast without a restricted entitlement, so a device can also be
  * paired by hand with a [PairingCode] (shown as a QR). Paired devices are synced on every round.
  */
-internal class LanSyncEngine(
-    private val deviceId: String,
-    private val session: SyncSession,
-    private val clock: Clock = Clock.System,
-) : SyncEngine {
-
+internal class LanSyncEngine(private val deviceId: String, private val session: SyncSession, private val clock: Clock = Clock.System) :
+    SyncEngine {
     private val _status = MutableStateFlow(SyncStatus())
     override val status: StateFlow<SyncStatus> = _status.asStateFlow()
 
@@ -97,13 +93,14 @@ internal class LanSyncEngine(
     }
 
     override suspend fun pairWith(code: PairingCode): Boolean {
-        val peer = Peer(
-            deviceId = "paired:${code.host}:${code.port}",
-            host = code.host,
-            port = code.port,
-            lastSeen = clock.now(),
-            paired = true,
-        )
+        val peer =
+            Peer(
+                deviceId = "paired:${code.host}:${code.port}",
+                host = code.host,
+                port = code.port,
+                lastSeen = clock.now(),
+                paired = true,
+            )
         peersLock.withLock { peers.getOrPut(peer.deviceId) { peer } }
         val synced = syncWith(peer)
         // A code that leads nowhere must not be retried forever.
@@ -150,15 +147,17 @@ internal class LanSyncEngine(
     }
 
     private suspend fun listenForPeers(selector: SelectorManager) {
-        val socket = aSocket(selector).udp().bind(InetSocketAddress("0.0.0.0", DISCOVERY_PORT)) {
-            reuseAddress = true
-            broadcast = true
-        }
+        val socket =
+            aSocket(selector).udp().bind(InetSocketAddress("0.0.0.0", DISCOVERY_PORT)) {
+                reuseAddress = true
+                broadcast = true
+            }
         for (datagram in socket.incoming) {
             val sender = datagram.address as? InetSocketAddress ?: continue
-            val announcement = runCatching {
-                Json.decodeFromString(Announcement.serializer(), datagram.packet.readText())
-            }.getOrNull() ?: continue
+            val announcement =
+                runCatching {
+                    Json.decodeFromString(Announcement.serializer(), datagram.packet.readText())
+                }.getOrNull() ?: continue
             if (announcement.deviceId == deviceId) continue
 
             onPeerSeen(Peer(announcement.deviceId, sender.hostname, announcement.port, clock.now()))
@@ -166,15 +165,16 @@ internal class LanSyncEngine(
     }
 
     private suspend fun onPeerSeen(seen: Peer) {
-        val shouldSync = peersLock.withLock {
-            val known = peers[seen.deviceId]
-            val updated = seen.copy(lastSyncAt = known?.lastSyncAt)
-            peers[seen.deviceId] = updated
-            publishPeerCount()
-            deviceId < seen.deviceId &&
-                seen.deviceId !in activeSyncs &&
-                (updated.lastSyncAt == null || clock.now() - updated.lastSyncAt >= SYNC_INTERVAL)
-        }
+        val shouldSync =
+            peersLock.withLock {
+                val known = peers[seen.deviceId]
+                val updated = seen.copy(lastSyncAt = known?.lastSyncAt)
+                peers[seen.deviceId] = updated
+                publishPeerCount()
+                deviceId < seen.deviceId &&
+                    seen.deviceId !in activeSyncs &&
+                    (updated.lastSyncAt == null || clock.now() - updated.lastSyncAt >= SYNC_INTERVAL)
+            }
         if (shouldSync) scope?.launch { syncWith(seen) }
     }
 

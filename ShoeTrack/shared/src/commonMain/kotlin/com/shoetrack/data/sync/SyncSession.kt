@@ -18,7 +18,6 @@ internal class SyncSession(
     private val mergeSnapshot: MergeSnapshotUseCase,
     private val photoStorage: PhotoStorage,
 ) {
-
     suspend fun runAsInitiator(channel: MessageChannel) {
         channel.send(SnapshotMessage(syncRepository.snapshot().toDto()))
         merge(channel.receive())
@@ -41,10 +40,13 @@ internal class SyncSession(
     }
 
     private suspend fun requestMissingPhotos(channel: MessageChannel) {
-        val missing = syncRepository.snapshot().products
-            .map { it.photoPath }
-            .filter { PhotoNames.isValid(it) && !photoStorage.exists(it) }
-            .distinct()
+        val missing =
+            syncRepository
+                .snapshot()
+                .products
+                .map { it.photoPath }
+                .filter { PhotoNames.isValid(it) && !photoStorage.exists(it) }
+                .distinct()
 
         for (name in missing) {
             channel.send(PhotoRequestMessage(name))
@@ -70,6 +72,5 @@ internal class SyncSession(
         }
     }
 
-    private fun unexpected(message: SyncMessage): Nothing =
-        throw IllegalStateException("Unexpected sync message: $message")
+    private fun unexpected(message: SyncMessage): Nothing = throw IllegalStateException("Unexpected sync message: $message")
 }

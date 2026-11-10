@@ -72,8 +72,6 @@ import com.shoetrack.presentation.photo.ShoePhoto
 import com.shoetrack.presentation.photo.rememberPhotoPicker
 import com.shoetrack.presentation.theme.Colorway
 import com.shoetrack.presentation.theme.ShoeTrackTheme
-import kotlin.time.Clock
-import kotlin.time.Instant
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import shoetrack.shared.generated.resources.Res
@@ -92,7 +90,6 @@ import shoetrack.shared.generated.resources.is_existing_customer
 import shoetrack.shared.generated.resources.last_payment_date
 import shoetrack.shared.generated.resources.last_payment_hint
 import shoetrack.shared.generated.resources.new_layaway
-import shoetrack.shared.generated.resources.new_layaway
 import shoetrack.shared.generated.resources.notebook_review_hint
 import shoetrack.shared.generated.resources.notebook_review_title
 import shoetrack.shared.generated.resources.optional
@@ -102,18 +99,15 @@ import shoetrack.shared.generated.resources.product_description
 import shoetrack.shared.generated.resources.required_field
 import shoetrack.shared.generated.resources.save
 import shoetrack.shared.generated.resources.take_photo
-import shoetrack.shared.generated.resources.take_photo
 import shoetrack.shared.generated.resources.today
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 // The viewfinder stays dark in both themes, like a camera screen.
 private val ViewfinderColor = Color(0xFF101437)
 
 @Composable
-fun NewLayawayScreen(
-    viewModel: NewLayawayViewModel,
-    onBack: () -> Unit,
-    onSaved: () -> Unit,
-) {
+fun NewLayawayScreen(viewModel: NewLayawayViewModel, onBack: () -> Unit, onSaved: () -> Unit) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val photoPicker = rememberPhotoPicker(onPhotoPicked = viewModel::onPhotoPicked)
@@ -170,7 +164,8 @@ internal fun NewLayawayContent(
         bottomBar = { SaveBar(enabled = !uiState.isSaving, onSave = onSave) },
     ) { padding ->
         Column(
-            modifier = Modifier
+            modifier =
+            Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
@@ -223,7 +218,8 @@ internal fun NewLayawayContent(
                     onValueChange = onInitialPaymentChange,
                     keyboardType = KeyboardType.Number,
                     placeholder = stringResource(Res.string.optional),
-                    errorMessage = if (uiState.isInitialPaymentInvalid) {
+                    errorMessage =
+                    if (uiState.isInitialPaymentInvalid) {
                         stringResource(Res.string.initial_payment_exceeds_price)
                     } else {
                         null
@@ -239,7 +235,8 @@ internal fun NewLayawayContent(
 @Composable
 private fun NotebookReviewNotice() {
     Column(
-        modifier = Modifier
+        modifier =
+        Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(ShoeTrackTheme.colors.sun.copy(alpha = 0.25f))
@@ -279,12 +276,14 @@ private fun LastPaymentDateField(lastPaymentAt: Instant?, onChange: (Instant?) -
 
     if (isPickerOpen) {
         val now = remember { Clock.System.now() }
-        val pickerState = rememberDatePickerState(
-            initialSelectedDateMillis = (lastPaymentAt ?: now).toPickerMillis(),
-            selectableDates = object : SelectableDates {
-                override fun isSelectableDate(utcTimeMillis: Long) = isPickableDay(utcTimeMillis, now)
-            },
-        )
+        val pickerState =
+            rememberDatePickerState(
+                initialSelectedDateMillis = (lastPaymentAt ?: now).toPickerMillis(),
+                selectableDates =
+                object : SelectableDates {
+                    override fun isSelectableDate(utcTimeMillis: Long) = isPickableDay(utcTimeMillis, now)
+                },
+            )
         DatePickerDialog(
             onDismissRequest = { isPickerOpen = false },
             confirmButton = {
@@ -333,7 +332,8 @@ private fun PhotoSection(photoName: String?, onTakePhoto: () -> Unit, onPickPhot
     val frame = ShoeTrackTheme.colors.sun
     val shutterLabel = stringResource(Res.string.take_photo)
     Box(
-        modifier = Modifier
+        modifier =
+        Modifier
             .fillMaxWidth()
             .height(188.dp)
             .clip(MaterialTheme.shapes.extraLarge)
@@ -344,7 +344,12 @@ private fun PhotoSection(photoName: String?, onTakePhoto: () -> Unit, onPickPhot
         } else {
             SneakerIllustration(
                 colorway = Colorway(Color.Transparent, Color.White, Color.White, Color.White),
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 26.dp).width(190.dp).alpha(0.16f),
+                modifier =
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 26.dp)
+                    .width(190.dp)
+                    .alpha(0.16f),
             )
             Text(
                 text = stringResource(Res.string.photo_hint),
@@ -355,7 +360,8 @@ private fun PhotoSection(photoName: String?, onTakePhoto: () -> Unit, onPickPhot
         }
         Canvas(Modifier.matchParentSize()) { drawCornerBrackets(frame) }
         Box(
-            modifier = Modifier
+            modifier =
+            Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 14.dp)
                 .size(56.dp)
@@ -382,6 +388,7 @@ private fun DrawScope.drawCornerBrackets(color: Color) {
     val stroke = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
     val w = size.width
     val h = size.height
+
     fun bracket(cornerX: Float, cornerY: Float, dx: Float, dy: Float) = drawPath(
         Path().apply {
             moveTo(cornerX + dx * arm, cornerY)
@@ -398,11 +405,7 @@ private fun DrawScope.drawCornerBrackets(color: Color) {
 }
 
 @Composable
-private fun CustomerSuggestions(
-    suggestions: List<Customer>,
-    isExistingCustomerSelected: Boolean,
-    onSelected: (Customer) -> Unit,
-) {
+private fun CustomerSuggestions(suggestions: List<Customer>, isExistingCustomerSelected: Boolean, onSelected: (Customer) -> Unit) {
     if (isExistingCustomerSelected) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             AppIcon(IconShape.Check, ShoeTrackTheme.colors.progressDone, size = 18.dp)
@@ -415,7 +418,8 @@ private fun CustomerSuggestions(
     }
     if (suggestions.isNotEmpty()) {
         Column(
-            modifier = Modifier
+            modifier =
+            Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(18.dp))
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
@@ -429,7 +433,8 @@ private fun CustomerSuggestions(
             )
             suggestions.forEach { customer ->
                 Row(
-                    modifier = Modifier
+                    modifier =
+                    Modifier
                         .padding(bottom = 6.dp)
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
@@ -472,7 +477,8 @@ private fun FormField(
         supportingText = errorMessage?.let { message -> { Text(message) } },
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         shape = RoundedCornerShape(16.dp),
-        colors = TextFieldDefaults.colors(
+        colors =
+        TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.background,
             unfocusedContainerColor = MaterialTheme.colorScheme.background,
             errorContainerColor = MaterialTheme.colorScheme.background,

@@ -25,7 +25,6 @@ class MergeSnapshotUseCase(
     private val scheduleReminder: ScheduleOverdueReminderUseCase,
     private val clock: Clock,
 ) {
-
     suspend operator fun invoke(remote: SyncSnapshot): MergeResult {
         val local = syncRepository.snapshot()
         val localCustomers = local.customers.associateBy(Customer::id)
@@ -38,15 +37,16 @@ class MergeSnapshotUseCase(
         val knownCustomerIds = localCustomers.keys + newCustomers.map(Customer::id)
 
         val now = clock.now()
-        val changedLayaways = remote.layaways.mapNotNull { incoming ->
-            // A layaway whose customer or product did not arrive cannot be shown; skip it.
-            val product = knownProducts[incoming.productId] ?: return@mapNotNull null
-            if (incoming.customerId !in knownCustomerIds) return@mapNotNull null
+        val changedLayaways =
+            remote.layaways.mapNotNull { incoming ->
+                // A layaway whose customer or product did not arrive cannot be shown; skip it.
+                val product = knownProducts[incoming.productId] ?: return@mapNotNull null
+                if (incoming.customerId !in knownCustomerIds) return@mapNotNull null
 
-            val existing = localLayaways[incoming.id]
-            val merged = evaluateOverdue(merger.merge(existing, incoming, product.totalPrice), now)
-            merged.takeIf { existing == null || !it.hasSameContentAs(existing) }
-        }
+                val existing = localLayaways[incoming.id]
+                val merged = evaluateOverdue(merger.merge(existing, incoming, product.totalPrice), now)
+                merged.takeIf { existing == null || !it.hasSameContentAs(existing) }
+            }
 
         if (newCustomers.isEmpty() && newProducts.isEmpty() && changedLayaways.isEmpty()) {
             return MergeResult(emptyList(), emptySet())
@@ -61,8 +61,7 @@ class MergeSnapshotUseCase(
         )
     }
 
-    private fun Layaway.hasSameContentAs(other: Layaway): Boolean =
-        state == other.state &&
-            remainingBalance == other.remainingBalance &&
-            payments.map { it.id }.toSet() == other.payments.map { it.id }.toSet()
+    private fun Layaway.hasSameContentAs(other: Layaway): Boolean = state == other.state &&
+        remainingBalance == other.remainingBalance &&
+        payments.map { it.id }.toSet() == other.payments.map { it.id }.toSet()
 }

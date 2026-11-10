@@ -21,19 +21,20 @@ import kotlin.test.assertFailsWith
 import kotlin.time.Instant
 
 class ClaudeNotebookReaderTest {
-
     private val keys = FakeAiKeyRepository(stored = "secret-key")
     private val clock = FixedClock(Instant.parse("2026-11-04T15:00:00Z"))
     private var sentKey: String? = null
 
     private fun reader(status: HttpStatusCode = HttpStatusCode.OK, body: String): ClaudeNotebookReader {
-        val engine = MockEngine { request ->
-            sentKey = request.headers["x-api-key"]
-            respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
-        }
-        val client = HttpClient(engine) {
-            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
-        }
+        val engine =
+            MockEngine { request ->
+                sentKey = request.headers["x-api-key"]
+                respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
+            }
+        val client =
+            HttpClient(engine) {
+                install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+            }
         return ClaudeNotebookReader(client, keys, clock)
     }
 
@@ -41,7 +42,11 @@ class ClaudeNotebookReaderTest {
 
     @Test
     fun readsTheEntryTheModelSends() = runTest {
-        val json = """{"customerName":"Paola Flor","productDescription":"Vans blanco/negro alto T37","totalPrice":80000,"paidAmount":60000,"lastPaymentDate":"2026-11-03"}"""
+        val json =
+            """
+                {"customerName":"Paola Flor","productDescription":"Vans blanco/negro alto T37",
+                "totalPrice":80000,"paidAmount":60000,"lastPaymentDate":"2026-11-03"}
+            """.trimIndent()
 
         val entry = reader(body = reply(json)).read(byteArrayOf(1, 2, 3))
 

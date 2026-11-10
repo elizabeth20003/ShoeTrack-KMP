@@ -7,7 +7,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class PairWithDeviceUseCaseTest {
-
     private val engine = FakeSyncEngine()
     private val pairWithDevice = PairWithDeviceUseCase(engine)
 

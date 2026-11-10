@@ -11,7 +11,6 @@ import kotlin.test.BeforeTest
 /** ViewModels launch on Dispatchers.Main, which does not exist in plain unit tests. */
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class MainDispatcherTest {
-
     @BeforeTest
     fun setUpMainDispatcher() {
         Dispatchers.setMain(UnconfinedTestDispatcher())

@@ -3,7 +3,6 @@ package com.shoetrack.domain.repository
 import com.shoetrack.domain.model.SyncSnapshot
 
 interface SyncRepository {
-
     suspend fun snapshot(): SyncSnapshot
 
     /**

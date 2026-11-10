@@ -55,17 +55,20 @@ data class NewLayawayUiState(
         }
 
     val isValid: Boolean
-        get() = !isInitialPaymentInvalid &&
-            customerName.isNotBlank() &&
-            productDescription.isNotBlank() &&
-            PhoneNumberRules.isValid(customerPhone) &&
-            price.toMoneyOrNull()?.isPositive == true
+        get() =
+            !isInitialPaymentInvalid &&
+                customerName.isNotBlank() &&
+                productDescription.isNotBlank() &&
+                PhoneNumberRules.isValid(customerPhone) &&
+                price.toMoneyOrNull()?.isPositive == true
 }
 
 /** One-time outcomes the screen reacts to, kept apart from the persistent state. */
 sealed interface NewLayawayEvent {
     data object Saved : NewLayawayEvent
+
     data object SaveFailed : NewLayawayEvent
+
     data object PhotoFailed : NewLayawayEvent
 }
 
@@ -75,7 +78,6 @@ class NewLayawayViewModel(
     private val searchCustomers: SearchCustomersUseCase,
     prefill: NotebookEntry? = null,
 ) : ViewModel() {
-
     private var suggestionsJob: Job? = null
 
     private val _uiState = MutableStateFlow(prefill?.toUiState() ?: NewLayawayUiState())
@@ -87,16 +89,16 @@ class NewLayawayViewModel(
     fun onCustomerNameChange(value: String) {
         _uiState.update { it.copy(customerName = value, selectedCustomerId = null) }
         suggestionsJob?.cancel()
-        suggestionsJob = viewModelScope.launch {
-            val suggestions = runCatchingExceptCancellation { searchCustomers(value) }.getOrDefault(emptyList())
-            _uiState.update { it.copy(customerSuggestions = suggestions) }
-        }
+        suggestionsJob =
+            viewModelScope.launch {
+                val suggestions = runCatchingExceptCancellation { searchCustomers(value) }.getOrDefault(emptyList())
+                _uiState.update { it.copy(customerSuggestions = suggestions) }
+            }
     }
 
-    fun onCustomerPhoneChange(value: String) =
-        _uiState.update {
-            it.copy(customerPhone = PhoneNumberRules.normalize(value).take(MAX_PHONE_DIGITS), selectedCustomerId = null)
-        }
+    fun onCustomerPhoneChange(value: String) = _uiState.update {
+        it.copy(customerPhone = PhoneNumberRules.normalize(value).take(MAX_PHONE_DIGITS), selectedCustomerId = null)
+    }
 
     fun onCustomerSelected(customer: Customer) {
         suggestionsJob?.cancel()
@@ -110,13 +112,11 @@ class NewLayawayViewModel(
         }
     }
 
-    fun onProductDescriptionChange(value: String) =
-        _uiState.update { it.copy(productDescription = value) }
+    fun onProductDescriptionChange(value: String) = _uiState.update { it.copy(productDescription = value) }
 
     fun onPriceChange(value: String) = _uiState.update { it.copy(price = value.digitsOnly()) }
 
-    fun onInitialPaymentChange(value: String) =
-        _uiState.update { it.copy(initialPayment = value.digitsOnly()) }
+    fun onInitialPaymentChange(value: String) = _uiState.update { it.copy(initialPayment = value.digitsOnly()) }
 
     fun onLastPaymentAtChange(date: Instant?) = _uiState.update { it.copy(lastPaymentAt = date) }
 
@@ -140,20 +140,21 @@ class NewLayawayViewModel(
 
         _uiState.update { it.copy(isSaving = true) }
         viewModelScope.launch {
-            val result = runCatchingExceptCancellation {
-                startLayaway(
-                    NewLayaway(
-                        customerName = state.customerName,
-                        customerPhone = state.customerPhone,
-                        productDescription = state.productDescription,
-                        productPhotoPath = state.photoName.orEmpty(),
-                        productPrice = price,
-                        initialPayment = state.initialPayment.toMoneyOrNull() ?: Money.ZERO,
-                        existingCustomerId = state.selectedCustomerId,
-                        lastPaymentAt = state.lastPaymentAt,
-                    ),
-                )
-            }
+            val result =
+                runCatchingExceptCancellation {
+                    startLayaway(
+                        NewLayaway(
+                            customerName = state.customerName,
+                            customerPhone = state.customerPhone,
+                            productDescription = state.productDescription,
+                            productPhotoPath = state.photoName.orEmpty(),
+                            productPrice = price,
+                            initialPayment = state.initialPayment.toMoneyOrNull() ?: Money.ZERO,
+                            existingCustomerId = state.selectedCustomerId,
+                            lastPaymentAt = state.lastPaymentAt,
+                        ),
+                    )
+                }
             _uiState.update { it.copy(isSaving = false) }
             _events.send(if (result.isSuccess) NewLayawayEvent.Saved else NewLayawayEvent.SaveFailed)
         }

@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class PairingCodeTest {
-
     @Test
     fun readsBackTheCodeItEncoded() {
         val code = PairingCode("192.168.1.23", 45872)

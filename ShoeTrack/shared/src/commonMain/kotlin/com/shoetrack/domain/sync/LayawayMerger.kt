@@ -14,7 +14,6 @@ import com.shoetrack.domain.model.Payment
  * A cancellation is final. Becoming overdue depends on the clock, so it is not decided here.
  */
 class LayawayMerger {
-
     fun merge(local: Layaway?, remote: Layaway, totalPrice: Money): Layaway {
         val payments = unionOfPayments(local, remote)
         val paid = payments.fold(Money.ZERO) { total, payment -> total + payment.amount }
@@ -28,10 +27,9 @@ class LayawayMerger {
         )
     }
 
-    private fun unionOfPayments(local: Layaway?, remote: Layaway): List<Payment> =
-        ((local?.payments.orEmpty()) + remote.payments)
-            .distinctBy { it.id }
-            .sortedWith(compareBy({ it.paidAt }, { it.id }))
+    private fun unionOfPayments(local: Layaway?, remote: Layaway): List<Payment> = ((local?.payments.orEmpty()) + remote.payments)
+        .distinctBy { it.id }
+        .sortedWith(compareBy({ it.paidAt }, { it.id }))
 
     private fun mergedState(local: Layaway?, remote: Layaway, remaining: Money): LayawayState = when {
         local?.state == LayawayState.Cancelled || remote.state == LayawayState.Cancelled ->

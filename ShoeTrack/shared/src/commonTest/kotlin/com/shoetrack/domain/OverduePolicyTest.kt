@@ -12,18 +12,18 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 class OverduePolicyTest {
-
     private val policy = OverduePolicy(overdueAfterDays = 30)
     private val lastPaymentAt = Instant.parse("2026-01-01T00:00:00Z")
-    private val layaway = Layaway(
-        id = "layaway-1",
-        customerId = "customer-1",
-        productId = "product-1",
-        remainingBalance = Money(10_000),
-        state = LayawayState.Active,
-        createdAt = lastPaymentAt,
-        lastPaymentAt = lastPaymentAt,
-    )
+    private val layaway =
+        Layaway(
+            id = "layaway-1",
+            customerId = "customer-1",
+            productId = "product-1",
+            remainingBalance = Money(10_000),
+            state = LayawayState.Active,
+            createdAt = lastPaymentAt,
+            lastPaymentAt = lastPaymentAt,
+        )
 
     @Test
     fun dueDateIsTheLimitAfterTheLastPayment() {

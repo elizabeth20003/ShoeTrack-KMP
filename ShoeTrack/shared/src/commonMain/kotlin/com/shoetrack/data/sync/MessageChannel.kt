@@ -2,7 +2,6 @@ package com.shoetrack.data.sync
 
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-
 import io.ktor.utils.io.readByteArray
 import io.ktor.utils.io.readInt
 import io.ktor.utils.io.writeFully
@@ -22,11 +21,7 @@ private val json = Json { ignoreUnknownKeys = true }
 private const val MAX_MESSAGE_BYTES = 32 * 1024 * 1024
 
 /** Sends each message as a JSON text preceded by its length in bytes. */
-internal class SocketMessageChannel(
-    private val input: ByteReadChannel,
-    private val output: ByteWriteChannel,
-) : MessageChannel {
-
+internal class SocketMessageChannel(private val input: ByteReadChannel, private val output: ByteWriteChannel) : MessageChannel {
     override suspend fun send(message: SyncMessage) {
         val bytes = json.encodeToString(SyncMessage.serializer(), message).encodeToByteArray()
         output.writeInt(bytes.size)

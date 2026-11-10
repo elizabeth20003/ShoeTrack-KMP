@@ -17,25 +17,25 @@ private val LocalMoneyStyles = staticCompositionLocalOf<MoneyStyles> { error("Sh
 /** Accessors for what the Material theme has no slot for. */
 object ShoeTrackTheme {
     val colors: ShoeTrackColors
-        @Composable @ReadOnlyComposable get() = LocalShoeTrackColors.current
+        @Composable @ReadOnlyComposable
+        get() = LocalShoeTrackColors.current
 
     val money: MoneyStyles
-        @Composable @ReadOnlyComposable get() = LocalMoneyStyles.current
+        @Composable @ReadOnlyComposable
+        get() = LocalMoneyStyles.current
 }
 
-private val ShoeTrackShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(24.dp),
-    extraLarge = RoundedCornerShape(28.dp),
-)
+private val ShoeTrackShapes =
+    Shapes(
+        extraSmall = RoundedCornerShape(8.dp),
+        small = RoundedCornerShape(12.dp),
+        medium = RoundedCornerShape(16.dp),
+        large = RoundedCornerShape(24.dp),
+        extraLarge = RoundedCornerShape(28.dp),
+    )
 
 @Composable
-fun ShoeTrackTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit,
-) {
+fun ShoeTrackTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val display = displayFontFamily()
     val body = bodyFontFamily()
     val typography = shoeTrackTypography(display, body)

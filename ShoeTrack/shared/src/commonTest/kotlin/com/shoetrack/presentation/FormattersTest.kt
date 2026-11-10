@@ -9,7 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class FormattersTest {
-
     @Test
     fun formatsMoneyWithThousandsSeparators() {
         assertEquals("$ 12.345", Money.fromUnits(12_345).format())

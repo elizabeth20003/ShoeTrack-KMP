@@ -2,7 +2,6 @@ package com.shoetrack.domain.validation
 
 /** Colombian mobile numbers: ten digits starting with 3. A phone number is optional. */
 object PhoneNumberRules {
-
     private const val MOBILE_LENGTH = 10
     private const val MOBILE_PREFIX = '3'
 

@@ -9,10 +9,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class AiKeyRepositoryImplTest {
-
-    private val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).also {
-        ShoeTrackDatabase.Schema.create(it)
-    }
+    private val driver =
+        JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).also {
+            ShoeTrackDatabase.Schema.create(it)
+        }
     private val repository = AiKeyRepositoryImpl(ShoeTrackDatabase(driver), Dispatchers.Unconfined)
 
     @Test

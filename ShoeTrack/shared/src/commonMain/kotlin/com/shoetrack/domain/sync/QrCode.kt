@@ -5,7 +5,6 @@ package com.shoetrack.domain.sync
  * The layout and the Reed-Solomon maths follow ISO/IEC 18004.
  */
 class QrCode private constructor(val size: Int, private val modules: Array<BooleanArray>) {
-
     /** True when the module at ([x], [y]) is dark. */
     fun isDark(x: Int, y: Int): Boolean = modules[y][x]
 
@@ -19,8 +18,9 @@ class QrCode private constructor(val size: Int, private val modules: Array<Boole
         /** Throws [IllegalArgumentException] when [text] does not fit in a version 6 code. */
         fun encode(text: String): QrCode {
             val bytes = text.encodeToByteArray()
-            val version = (1..MAX_VERSION).firstOrNull { bytes.size <= dataCodewords(it) - 2 }
-                ?: throw IllegalArgumentException("The text is too long for a QR code")
+            val version =
+                (1..MAX_VERSION).firstOrNull { bytes.size <= dataCodewords(it) - 2 }
+                    ?: throw IllegalArgumentException("The text is too long for a QR code")
             val codewords = interleaveWithErrorCorrection(version, dataBytes(version, bytes))
             return Builder(version).build(codewords)
         }
@@ -62,15 +62,16 @@ class QrCode private constructor(val size: Int, private val modules: Array<Boole
             val divisor = reedSolomonDivisor(eccLength)
 
             var offset = 0
-            val parts = (0 until blocks).map { index ->
-                val dataLength = shortBlockLength - eccLength + if (index < shortBlocks) 0 else 1
-                val block = data.copyOfRange(offset, offset + dataLength)
-                offset += dataLength
-                val ecc = reedSolomonRemainder(block, divisor)
-                // Short blocks get a placeholder so every block has the same length when interleaving.
-                val padded = if (index < shortBlocks) block + 0.toByte() else block
-                padded + ecc
-            }
+            val parts =
+                (0 until blocks).map { index ->
+                    val dataLength = shortBlockLength - eccLength + if (index < shortBlocks) 0 else 1
+                    val block = data.copyOfRange(offset, offset + dataLength)
+                    offset += dataLength
+                    val ecc = reedSolomonRemainder(block, divisor)
+                    // Short blocks get a placeholder so every block has the same length when interleaving.
+                    val padded = if (index < shortBlocks) block + 0.toByte() else block
+                    padded + ecc
+                }
 
             val result = ArrayList<Byte>(rawCodewords)
             for (i in parts[0].indices) {
@@ -220,6 +221,7 @@ class QrCode private constructor(val size: Int, private val modules: Array<Boole
             var remainder = data
             repeat(10) { remainder = (remainder shl 1) xor ((remainder ushr 9) * 0x537) }
             val bits = ((data shl 10) or remainder) xor 0x5412
+
             fun bit(i: Int) = ((bits ushr i) and 1) != 0
 
             for (i in 0..5) setFunction(8, i, bit(i))
@@ -256,16 +258,17 @@ class QrCode private constructor(val size: Int, private val modules: Array<Boole
         private fun applyMask(mask: Int) {
             for (y in 0 until size) {
                 for (x in 0 until size) {
-                    val invert = when (mask) {
-                        0 -> (x + y) % 2 == 0
-                        1 -> y % 2 == 0
-                        2 -> x % 3 == 0
-                        3 -> (x + y) % 3 == 0
-                        4 -> (x / 3 + y / 2) % 2 == 0
-                        5 -> x * y % 2 + x * y % 3 == 0
-                        6 -> (x * y % 2 + x * y % 3) % 2 == 0
-                        else -> ((x + y) % 2 + x * y % 3) % 2 == 0
-                    }
+                    val invert =
+                        when (mask) {
+                            0 -> (x + y) % 2 == 0
+                            1 -> y % 2 == 0
+                            2 -> x % 3 == 0
+                            3 -> (x + y) % 3 == 0
+                            4 -> (x / 3 + y / 2) % 2 == 0
+                            5 -> x * y % 2 + x * y % 3 == 0
+                            6 -> (x * y % 2 + x * y % 3) % 2 == 0
+                            else -> ((x + y) % 2 + x * y % 3) % 2 == 0
+                        }
                     if (invert && !isFunction[y][x]) modules[y][x] = !modules[y][x]
                 }
             }
@@ -281,7 +284,11 @@ class QrCode private constructor(val size: Int, private val modules: Array<Boole
                         val same = if (horizontal) modules[a][b] == modules[a][b - 1] else modules[b][a] == modules[b - 1][a]
                         if (same) {
                             run++
-                            if (run == 5) result += 3 else if (run > 5) result++
+                            if (run == 5) {
+                                result += 3
+                            } else if (run > 5) {
+                                result++
+                            }
                         } else {
                             run = 1
                         }

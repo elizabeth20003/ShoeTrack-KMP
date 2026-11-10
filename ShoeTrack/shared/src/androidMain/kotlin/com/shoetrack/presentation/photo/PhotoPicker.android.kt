@@ -24,18 +24,20 @@ actual fun rememberPhotoPicker(onPhotoPicked: (ByteArray) -> Unit, maxSidePx: In
     // The camera app runs in another task, so the target file must survive this activity being recreated.
     var pendingCapturePath by rememberSaveable { mutableStateOf<String?>(null) }
 
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
-        val capture = pendingCapturePath?.let(::File)
-        if (taken && capture != null) {
-            currentOnPhotoPicked(scaleToJpeg(capture.readBytes(), maxSidePx))
+    val cameraLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
+            val capture = pendingCapturePath?.let(::File)
+            if (taken && capture != null) {
+                currentOnPhotoPicked(scaleToJpeg(capture.readBytes(), maxSidePx))
+            }
+            capture?.delete()
+            pendingCapturePath = null
         }
-        capture?.delete()
-        pendingCapturePath = null
-    }
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        val bytes = uri?.let { context.contentResolver.openInputStream(it)?.use { stream -> stream.readBytes() } }
-        if (bytes != null) currentOnPhotoPicked(scaleToJpeg(bytes, maxSidePx))
-    }
+    val galleryLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            val bytes = uri?.let { context.contentResolver.openInputStream(it)?.use { stream -> stream.readBytes() } }
+            if (bytes != null) currentOnPhotoPicked(scaleToJpeg(bytes, maxSidePx))
+        }
 
     return remember(context) {
         object : PhotoPicker {

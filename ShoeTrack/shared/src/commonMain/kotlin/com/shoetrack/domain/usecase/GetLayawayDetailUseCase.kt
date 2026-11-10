@@ -11,15 +11,16 @@ class GetLayawayDetailUseCase(
     private val customerRepository: CustomerRepository,
     private val productRepository: ProductRepository,
 ) {
-
     suspend operator fun invoke(id: String): LayawayDetail {
         val layaway = layawayRepository.getById(id) ?: throw LayawayNotFoundException(id)
-        val customer = checkNotNull(customerRepository.getById(layaway.customerId)) {
-            "Layaway $id references a missing customer"
-        }
-        val product = checkNotNull(productRepository.getById(layaway.productId)) {
-            "Layaway $id references a missing product"
-        }
+        val customer =
+            checkNotNull(customerRepository.getById(layaway.customerId)) {
+                "Layaway $id references a missing customer"
+            }
+        val product =
+            checkNotNull(productRepository.getById(layaway.productId)) {
+                "Layaway $id references a missing product"
+            }
         return LayawayDetail(layaway, customer, product)
     }
 }

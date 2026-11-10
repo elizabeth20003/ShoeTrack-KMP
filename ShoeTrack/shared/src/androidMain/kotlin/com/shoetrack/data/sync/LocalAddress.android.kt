@@ -7,7 +7,9 @@ import java.net.NetworkInterface
 private val LOCAL_INTERFACE_PREFIXES = listOf("wlan", "swlan", "ap", "eth")
 
 internal actual suspend fun localIpv4Address(): String? = runCatching {
-    NetworkInterface.getNetworkInterfaces().toList()
+    NetworkInterface
+        .getNetworkInterfaces()
+        .toList()
         .filter { network -> network.isUp && LOCAL_INTERFACE_PREFIXES.any { network.name.startsWith(it) } }
         .flatMap { it.inetAddresses.toList() }
         .filterIsInstance<Inet4Address>()

@@ -7,7 +7,6 @@ import com.shoetrack.notification.AndroidOverdueReminderScheduler
 import java.io.File
 
 class ShoeTrackApplication : Application() {
-
     override fun onCreate() {
         super.onCreate()
         initKoin(

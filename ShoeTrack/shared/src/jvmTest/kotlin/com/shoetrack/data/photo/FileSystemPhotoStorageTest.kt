@@ -9,7 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class FileSystemPhotoStorageTest {
-
     private val directory = Files.createTempDirectory("shoetrack-photos").resolve("photos")
     private val storage = FileSystemPhotoStorage(directory.toString(), SequentialIdGenerator())
 

@@ -6,7 +6,6 @@ package com.shoetrack.domain.sync
  * broadcast discovery) can still connect to them.
  */
 data class PairingCode(val host: String, val port: Int) {
-
     fun encode(): String = "$PREFIX$host:$port"
 
     companion object {
@@ -22,8 +21,9 @@ data class PairingCode(val host: String, val port: Int) {
             val parts = trimmed.removePrefix(PREFIX).split(':')
             if (parts.size != 2) return null
             val octets = parts[0].split('.')
-            val validHost = octets.size == OCTET_COUNT &&
-                octets.all { octet -> octet.toIntOrNull()?.let { it in 0..MAX_OCTET } == true }
+            val validHost =
+                octets.size == OCTET_COUNT &&
+                    octets.all { octet -> octet.toIntOrNull()?.let { it in 0..MAX_OCTET } == true }
             val port = parts[1].toIntOrNull()?.takeIf { it in 1..MAX_PORT }
             return if (validHost && port != null) PairingCode(parts[0], port) else null
         }

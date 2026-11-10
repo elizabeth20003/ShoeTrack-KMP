@@ -13,24 +13,25 @@ import kotlin.test.assertEquals
 import kotlin.time.Instant
 
 class SyncMessagesTest {
-
     private val now = Instant.parse("2026-01-01T00:00:00Z")
-    private val snapshot = SyncSnapshot(
-        customers = listOf(Customer("customer-1", "Ana Perez", "3001234567", now)),
-        products = listOf(Product("product-1", "Nike Air Force 42", "photo-1.jpg", Money(10_000))),
-        layaways = listOf(
-            Layaway(
-                id = "layaway-1",
-                customerId = "customer-1",
-                productId = "product-1",
-                remainingBalance = Money(6_000),
-                state = LayawayState.Active,
-                createdAt = now,
-                lastPaymentAt = now,
-                payments = listOf(Payment("payment-1", "layaway-1", Money(4_000), now, "device-1")),
+    private val snapshot =
+        SyncSnapshot(
+            customers = listOf(Customer("customer-1", "Ana Perez", "3001234567", now)),
+            products = listOf(Product("product-1", "Nike Air Force 42", "photo-1.jpg", Money(10_000))),
+            layaways =
+            listOf(
+                Layaway(
+                    id = "layaway-1",
+                    customerId = "customer-1",
+                    productId = "product-1",
+                    remainingBalance = Money(6_000),
+                    state = LayawayState.Active,
+                    createdAt = now,
+                    lastPaymentAt = now,
+                    payments = listOf(Payment("payment-1", "layaway-1", Money(4_000), now, "device-1")),
+                ),
             ),
-        ),
-    )
+        )
 
     @Test
     fun aSnapshotSurvivesTheTripOverTheWire() {

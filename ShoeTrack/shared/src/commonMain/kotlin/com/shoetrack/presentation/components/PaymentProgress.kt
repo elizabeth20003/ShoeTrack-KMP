@@ -23,26 +23,27 @@ private const val FILL_MILLIS = 700
 
 /** A rounded bar showing how much of the price is paid. Changing [fraction] animates the fill. */
 @Composable
-fun PaymentProgress(
-    fraction: Float,
-    color: Color,
-    modifier: Modifier = Modifier,
-    thickness: Dp = 8.dp,
-    description: String? = null,
-) {
+fun PaymentProgress(fraction: Float, color: Color, modifier: Modifier = Modifier, thickness: Dp = 8.dp, description: String? = null) {
     val animated by animateFloatAsState(
         targetValue = fraction.coerceIn(0f, 1f),
         animationSpec = tween(FILL_MILLIS),
     )
     Box(
-        modifier = modifier
+        modifier =
+        modifier
             .fillMaxWidth()
             .height(thickness)
             .clip(CircleShape)
             .background(ShoeTrackTheme.colors.progressTrack)
             .semantics { description?.let { contentDescription = it } },
     ) {
-        Box(Modifier.fillMaxHeight().fillMaxWidth(animated).clip(CircleShape).background(color))
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(animated)
+                .clip(CircleShape)
+                .background(color),
+        )
     }
 }
 

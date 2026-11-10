@@ -55,7 +55,6 @@ class LayawayDetailViewModel(
     private val overduePolicy: OverduePolicy,
     private val clock: Clock,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(LayawayDetailUiState())
     val uiState: StateFlow<LayawayDetailUiState> = _uiState.asStateFlow()
 
@@ -68,11 +67,9 @@ class LayawayDetailViewModel(
 
     fun openPaymentDialog() = _uiState.update { it.copy(isPaymentDialogOpen = true) }
 
-    fun dismissPaymentDialog() =
-        _uiState.update { it.copy(isPaymentDialogOpen = false, paymentInput = "") }
+    fun dismissPaymentDialog() = _uiState.update { it.copy(isPaymentDialogOpen = false, paymentInput = "") }
 
-    fun onPaymentInputChange(value: String) =
-        _uiState.update { it.copy(paymentInput = value.filter(Char::isDigit).take(MAX_MONEY_DIGITS)) }
+    fun onPaymentInputChange(value: String) = _uiState.update { it.copy(paymentInput = value.filter(Char::isDigit).take(MAX_MONEY_DIGITS)) }
 
     fun confirmPayment() {
         val state = _uiState.value
@@ -105,7 +102,8 @@ class LayawayDetailViewModel(
                 detail = detail,
                 daysUntilDue = detail?.layaway?.let(::daysUntilDue),
                 isLoading = false,
-                loadFailed = result.exceptionOrNull().let { error ->
+                loadFailed =
+                result.exceptionOrNull().let { error ->
                     error != null && error !is LayawayNotFoundException
                 },
             )

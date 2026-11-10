@@ -8,7 +8,6 @@ import java.util.UUID
  * SharedPreferences, so every record written here carries the same id.
  */
 internal object DeviceId {
-
     private const val PREFERENCES_NAME = "shoetrack_device"
     private const val KEY_DEVICE_ID = "device_id"
 

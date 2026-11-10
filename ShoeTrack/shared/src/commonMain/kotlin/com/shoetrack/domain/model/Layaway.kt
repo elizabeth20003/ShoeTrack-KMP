@@ -4,8 +4,11 @@ import kotlin.time.Instant
 
 sealed class LayawayState {
     data object Active : LayawayState()
+
     data object Overdue : LayawayState()
+
     data object Completed : LayawayState()
+
     data object Cancelled : LayawayState()
 }
 

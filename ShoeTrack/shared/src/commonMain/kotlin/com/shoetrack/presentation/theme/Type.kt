@@ -4,10 +4,10 @@ import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.TextStyle
-import org.jetbrains.compose.resources.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.Font
 import shoetrack.shared.generated.resources.Res
 import shoetrack.shared.generated.resources.bricolage_grotesque_bold
 import shoetrack.shared.generated.resources.bricolage_grotesque_extrabold
@@ -19,11 +19,7 @@ import shoetrack.shared.generated.resources.dm_sans_semibold
 
 /** Styles for amounts of money, which are the biggest numbers on screen. */
 @Immutable
-data class MoneyStyles(
-    val large: TextStyle,
-    val medium: TextStyle,
-    val small: TextStyle,
-)
+data class MoneyStyles(val large: TextStyle, val medium: TextStyle, val small: TextStyle)
 
 @Composable
 internal fun displayFontFamily(): FontFamily = FontFamily(
@@ -42,6 +38,7 @@ internal fun bodyFontFamily(): FontFamily = FontFamily(
 
 internal fun shoeTrackTypography(display: FontFamily, body: FontFamily): Typography {
     val base = Typography()
+
     fun displayStyle(size: Int, weight: FontWeight = FontWeight.Bold) = TextStyle(
         fontFamily = display,
         fontWeight = weight,
@@ -69,7 +66,21 @@ internal fun shoeTrackTypography(display: FontFamily, body: FontFamily): Typogra
 }
 
 internal fun moneyStyles(display: FontFamily) = MoneyStyles(
-    large = TextStyle(fontFamily = display, fontWeight = FontWeight.Bold, fontSize = 44.sp, lineHeight = 46.sp, letterSpacing = (-0.9f).sp),
-    medium = TextStyle(fontFamily = display, fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 26.sp, letterSpacing = (-0.2f).sp),
+    large =
+    TextStyle(
+        fontFamily = display,
+        fontWeight = FontWeight.Bold,
+        fontSize = 44.sp,
+        lineHeight = 46.sp,
+        letterSpacing = (-0.9f).sp,
+    ),
+    medium =
+    TextStyle(
+        fontFamily = display,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp,
+        lineHeight = 26.sp,
+        letterSpacing = (-0.2f).sp,
+    ),
     small = TextStyle(fontFamily = display, fontWeight = FontWeight.Bold, fontSize = 20.sp, lineHeight = 24.sp),
 )

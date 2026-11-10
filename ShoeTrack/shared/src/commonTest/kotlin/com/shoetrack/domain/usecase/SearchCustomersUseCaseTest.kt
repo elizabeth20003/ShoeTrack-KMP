@@ -8,7 +8,6 @@ import kotlin.test.assertEquals
 import kotlin.time.Instant
 
 class SearchCustomersUseCaseTest {
-
     private val now = Instant.parse("2026-01-01T00:00:00Z")
     private val customers = FakeCustomerRepository()
     private val searchCustomers = SearchCustomersUseCase(customers)

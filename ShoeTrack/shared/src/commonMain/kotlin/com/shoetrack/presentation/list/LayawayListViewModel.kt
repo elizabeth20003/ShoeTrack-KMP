@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 
 sealed interface LayawayListUiState {
     data object Loading : LayawayListUiState
+
     /** [layaways] are the ones matching the search; [hasAnyLayaways] tells an empty store from an empty search. */
     data class Loaded(
         val layaways: List<LayawaySummary>,
@@ -31,6 +32,7 @@ sealed interface LayawayListUiState {
         val totals: LayawayTotals,
         val filter: LayawayFilter = LayawayFilter.All,
     ) : LayawayListUiState
+
     data object Error : LayawayListUiState
 }
 
@@ -42,7 +44,6 @@ class LayawayListViewModel(
     syncEngine: SyncEngine,
     private val pairWithDevice: PairWithDeviceUseCase,
 ) : ViewModel() {
-
     val syncStatus: StateFlow<SyncStatus> = syncEngine.status
     val pairingCode: StateFlow<PairingCode?> = syncEngine.pairingCode
 
@@ -55,11 +56,12 @@ class LayawayListViewModel(
         _pairingState.value = PairingState.Connecting
         viewModelScope.launch {
             val result = runCatchingExceptCancellation { pairWithDevice(text) }.getOrDefault(PairingResult.Unreachable)
-            _pairingState.value = when (result) {
-                PairingResult.Paired -> PairingState.Paired
-                PairingResult.Unreachable -> PairingState.Failed
-                PairingResult.InvalidCode -> PairingState.Invalid
-            }
+            _pairingState.value =
+                when (result) {
+                    PairingResult.Paired -> PairingState.Paired
+                    PairingResult.Unreachable -> PairingState.Failed
+                    PairingResult.InvalidCode -> PairingState.Invalid
+                }
         }
     }
 
@@ -70,29 +72,29 @@ class LayawayListViewModel(
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
 
-    private val _filter = MutableStateFlow(LayawayFilter.All)
+    private val selectedFilter = MutableStateFlow(LayawayFilter.All)
 
-    val uiState: StateFlow<LayawayListUiState> = combine<List<LayawaySummary>, String, LayawayFilter, LayawayListUiState>(
-        observeLayaways(),
-        _query,
-        _filter,
-    ) { layaways, query, filter ->
-        LayawayListUiState.Loaded(
-            layaways = layaways.filter { filter.accepts(it) && it.matches(query) },
-            hasAnyLayaways = layaways.isNotEmpty(),
-            totals = layaways.totals(),
-            filter = filter,
-        )
-    }
-        .catch { emit(LayawayListUiState.Error) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), LayawayListUiState.Loading)
+    val uiState: StateFlow<LayawayListUiState> =
+        combine<List<LayawaySummary>, String, LayawayFilter, LayawayListUiState>(
+            observeLayaways(),
+            _query,
+            selectedFilter,
+        ) { layaways, query, filter ->
+            LayawayListUiState.Loaded(
+                layaways = layaways.filter { filter.accepts(it) && it.matches(query) },
+                hasAnyLayaways = layaways.isNotEmpty(),
+                totals = layaways.totals(),
+                filter = filter,
+            )
+        }.catch { emit(LayawayListUiState.Error) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), LayawayListUiState.Loading)
 
     fun onQueryChange(query: String) {
         _query.value = query
     }
 
     fun onFilterChange(filter: LayawayFilter) {
-        _filter.value = filter
+        selectedFilter.value = filter
     }
 
     init {

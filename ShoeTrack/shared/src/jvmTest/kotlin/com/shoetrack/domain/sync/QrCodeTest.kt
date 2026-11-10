@@ -9,25 +9,26 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class QrCodeTest {
-
     // A real decoder is the only honest check that the code can be scanned.
     private fun decode(qr: QrCode): String {
         val scale = 6
         val margin = 4
         val side = (qr.size + 2 * margin) * scale
-        val pixels = ByteArray(side * side) { index ->
-            val x = index % side / scale - margin
-            val y = index / side / scale - margin
-            val dark = x in 0 until qr.size && y in 0 until qr.size && qr.isDark(x, y)
-            if (dark) 0 else 0xFF.toByte()
-        }
-        val source = object : LuminanceSource(side, side) {
-            override fun getRow(y: Int, row: ByteArray?): ByteArray = pixels.copyOfRange(y * side, (y + 1) * side)
+        val pixels =
+            ByteArray(side * side) { index ->
+                val x = index % side / scale - margin
+                val y = index / side / scale - margin
+                val dark = x in 0 until qr.size && y in 0 until qr.size && qr.isDark(x, y)
+                if (dark) 0 else 0xFF.toByte()
+            }
+        val source =
+            object : LuminanceSource(side, side) {
+                override fun getRow(y: Int, row: ByteArray?): ByteArray = pixels.copyOfRange(y * side, (y + 1) * side)
 
-            override fun getMatrix(): ByteArray = pixels
+                override fun getMatrix(): ByteArray = pixels
 
-            override fun isCropSupported() = false
-        }
+                override fun isCropSupported() = false
+            }
         return QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source))).text
     }
 

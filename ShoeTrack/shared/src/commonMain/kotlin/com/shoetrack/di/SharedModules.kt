@@ -15,36 +15,36 @@ import com.shoetrack.data.sync.SyncSession
 import com.shoetrack.db.ShoeTrackDatabase
 import com.shoetrack.domain.model.OverduePolicy
 import com.shoetrack.domain.notebook.NotebookEntry
-import com.shoetrack.presentation.create.NewLayawayViewModel
-import com.shoetrack.presentation.detail.LayawayDetailViewModel
-import com.shoetrack.presentation.list.LayawayListViewModel
-import com.shoetrack.presentation.scan.ScanViewModel
 import com.shoetrack.domain.repository.AiKeyRepository
 import com.shoetrack.domain.repository.CustomerRepository
 import com.shoetrack.domain.repository.LayawayRepository
 import com.shoetrack.domain.repository.ProductRepository
 import com.shoetrack.domain.repository.SyncRepository
-import com.shoetrack.domain.sync.LayawayMerger
-import com.shoetrack.domain.sync.SyncEngine
-import com.shoetrack.domain.usecase.MergeSnapshotUseCase
-import com.shoetrack.domain.usecase.SearchCustomersUseCase
 import com.shoetrack.domain.service.IdGenerator
 import com.shoetrack.domain.service.NotebookReader
 import com.shoetrack.domain.service.OverdueReminderScheduler
 import com.shoetrack.domain.service.PhotoStorage
 import com.shoetrack.domain.service.TextRecognizer
+import com.shoetrack.domain.sync.LayawayMerger
+import com.shoetrack.domain.sync.SyncEngine
 import com.shoetrack.domain.usecase.CreateLayawayUseCase
 import com.shoetrack.domain.usecase.EvaluateOverdueUseCase
 import com.shoetrack.domain.usecase.GetLayawayDetailUseCase
+import com.shoetrack.domain.usecase.LoadPhotoUseCase
+import com.shoetrack.domain.usecase.MergeSnapshotUseCase
 import com.shoetrack.domain.usecase.ObserveLayawaysUseCase
 import com.shoetrack.domain.usecase.PairWithDeviceUseCase
-import com.shoetrack.domain.usecase.LoadPhotoUseCase
 import com.shoetrack.domain.usecase.ProcessPaymentUseCase
 import com.shoetrack.domain.usecase.RefreshOverdueUseCase
 import com.shoetrack.domain.usecase.RegisterPaymentUseCase
-import com.shoetrack.domain.usecase.ScheduleOverdueReminderUseCase
 import com.shoetrack.domain.usecase.SavePhotoUseCase
+import com.shoetrack.domain.usecase.ScheduleOverdueReminderUseCase
+import com.shoetrack.domain.usecase.SearchCustomersUseCase
 import com.shoetrack.domain.usecase.StartLayawayUseCase
+import com.shoetrack.presentation.create.NewLayawayViewModel
+import com.shoetrack.presentation.detail.LayawayDetailViewModel
+import com.shoetrack.presentation.list.LayawayListViewModel
+import com.shoetrack.presentation.scan.ScanViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -124,11 +124,7 @@ private fun domainModule(deviceId: String): Module = module {
     }
 }
 
-private fun dataModule(
-    driverFactory: DatabaseDriverFactory,
-    photosDirectory: String,
-    deviceId: String,
-): Module = module {
+private fun dataModule(driverFactory: DatabaseDriverFactory, photosDirectory: String, deviceId: String): Module = module {
     single<PhotoStorage> { FileSystemPhotoStorage(photosDirectory, idGenerator = get()) }
     single<ShoeTrackDatabase> { ShoeTrackDatabase(driverFactory.createDriver()) }
     single<CustomerRepository> { CustomerRepositoryImpl(get()) }

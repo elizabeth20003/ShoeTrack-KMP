@@ -6,13 +6,7 @@ import com.shoetrack.domain.model.Product
 import kotlin.time.Instant
 
 class CreateLayawayUseCase {
-
-    operator fun invoke(
-        id: String,
-        customerId: String,
-        product: Product,
-        now: Instant,
-    ): Layaway {
+    operator fun invoke(id: String, customerId: String, product: Product, now: Instant): Layaway {
         require(product.totalPrice.isPositive) { "The product price must be greater than zero" }
 
         return Layaway(

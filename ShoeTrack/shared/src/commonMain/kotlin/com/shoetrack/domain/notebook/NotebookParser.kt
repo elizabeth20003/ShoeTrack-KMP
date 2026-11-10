@@ -12,7 +12,6 @@ import kotlinx.datetime.LocalDate
  * accepts those in amounts and in the words that label them.
  */
 object NotebookParser {
-
     private const val LETTERS = "A-Za-zÁÉÍÓÚÜáéíóúüÑñ"
     private const val DIGIT_LIKE = "0-9OoDlIi|SsBZ"
     private const val MAX_NAME_WORDS = 2
@@ -43,22 +42,29 @@ object NotebookParser {
         val following = lines.drop(startIndex + 1)
         val tokens = (listOf(start.groupValues[2]) + following).joinToString(" ").toTokens()
         // Each later payment is written on its own dated line; the newest date is the last payment.
-        val lastPaymentDate = (listOf(lines[startIndex]) + following)
-            .mapNotNull { datedLine.matchEntire(it)?.groupValues?.get(1) }
-            .mapNotNull(::parseDate)
-            .lastOrNull()
+        val lastPaymentDate =
+            (listOf(lines[startIndex]) + following)
+                .mapNotNull { datedLine.matchEntire(it)?.groupValues?.get(1) }
+                .mapNotNull(::parseDate)
+                .lastOrNull()
         return read(tokens, lastPaymentDate)
     }
 
     /** A badly read date must not discard the line: start at the first two words in a row, the customer. */
     private fun parseWithoutDate(lines: List<String>): NotebookEntry {
-        val index = lines.indexOfFirst { line ->
-            line.toTokens().windowed(2).any { (first, second) ->
-                word.matches(first) && word.matches(second) && labelOf(first) == null
+        val index =
+            lines.indexOfFirst { line ->
+                line.toTokens().windowed(2).any { (first, second) ->
+                    word.matches(first) && word.matches(second) && labelOf(first) == null
+                }
             }
-        }
         if (index < 0) return NotebookEntry()
-        val tokens = lines.drop(index).joinToString(" ").toTokens().dropWhile { !word.matches(it) }
+        val tokens =
+            lines
+                .drop(index)
+                .joinToString(" ")
+                .toTokens()
+                .dropWhile { !word.matches(it) }
         return read(tokens, lastPaymentDate = null)
     }
 
@@ -96,18 +102,20 @@ object NotebookParser {
         val balances = figures.filter { it.label == Label.Balance }.map { it.amount }
 
         // Without a bare or labeled total, the first balance is the price before any payment was made.
-        val total = labeledTotal ?: when {
-            balances.size >= 2 -> balances.first()
-            balances.size == 1 && payments.isNotEmpty() -> balances.first()?.let { it + payments.last() }
-            else -> balances.firstOrNull()
-        }
+        val total =
+            labeledTotal ?: when {
+                balances.size >= 2 -> balances.first()
+                balances.size == 1 && payments.isNotEmpty() -> balances.first()?.let { it + payments.last() }
+                else -> balances.firstOrNull()
+            }
         val balance = if (labeledTotal != null || balances.size >= 2) balances.lastOrNull() else null
 
-        val paid = when {
-            payments.size == 1 -> payments.first()
-            total != null && balance != null && total >= balance -> total - balance
-            else -> payments.lastOrNull()
-        }
+        val paid =
+            when {
+                payments.size == 1 -> payments.first()
+                total != null && balance != null && total >= balance -> total - balance
+                else -> payments.lastOrNull()
+            }
         return NotebookEntry(customerName, productDescription, total, paid, lastPaymentDate)
     }
 
@@ -154,11 +162,12 @@ object NotebookParser {
 
     private fun parseAmount(token: String): Money? {
         val separated = separatedAmount.matchEntire(token)
-        val digits = when {
-            separated != null -> separated.groupValues[1] + separated.groupValues[2]
-            plainAmount.matches(token) -> token
-            else -> return null
-        }
+        val digits =
+            when {
+                separated != null -> separated.groupValues[1] + separated.groupValues[2]
+                plainAmount.matches(token) -> token
+                else -> return null
+            }
         val corrected = digits.map(::asDigit).joinToString("")
         // Mostly real digits, so words that happen to use look-alike letters are not amounts.
         if (token.count { it.isDigit() } * 2 < token.count { it.isLetterOrDigit() }) return null
@@ -176,7 +185,17 @@ object NotebookParser {
     }
 
     private fun parseDate(text: String): LocalDate? {
-        val digits = text.map { if (it in "Oo") '0' else if (it in "lI|i") '1' else it }.joinToString("")
+        val digits =
+            text
+                .map {
+                    if (it in "Oo") {
+                        '0'
+                    } else if (it in "lI|i") {
+                        '1'
+                    } else {
+                        it
+                    }
+                }.joinToString("")
         val parts = date.matchEntire(digits)?.groupValues ?: return null
         val day = parts[1].toInt()
         val month = parts[2].take(2).toInt()
@@ -202,9 +221,12 @@ object NotebookParser {
         while (index < tokens.size) {
             val head = tokens[index]
             val tail = tokens.getOrNull(index + 1)
-            val splitAmount = tail != null &&
-                thousandsHead.matches(head) && head.any(Char::isDigit) &&
-                thousandsTail.matches(tail) && tail.any(Char::isDigit)
+            val splitAmount =
+                tail != null &&
+                    thousandsHead.matches(head) &&
+                    head.any(Char::isDigit) &&
+                    thousandsTail.matches(tail) &&
+                    tail.any(Char::isDigit)
             if (splitAmount) {
                 merged += "$head.$tail"
                 index += 2

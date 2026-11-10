@@ -6,11 +6,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-internal class AiKeyRepositoryImpl(
-    database: ShoeTrackDatabase,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
-) : AiKeyRepository {
-
+internal class AiKeyRepositoryImpl(database: ShoeTrackDatabase, private val dispatcher: CoroutineDispatcher = Dispatchers.Default) :
+    AiKeyRepository {
     private val queries = database.settingQueries
 
     override suspend fun key(): String? = withContext(dispatcher) {

@@ -1,8 +1,8 @@
 package com.shoetrack.domain.usecase
 
 import com.shoetrack.domain.model.LayawayState
-import com.shoetrack.domain.model.OverdueReminder
 import com.shoetrack.domain.model.OverduePolicy
+import com.shoetrack.domain.model.OverdueReminder
 import com.shoetrack.domain.service.OverdueReminderScheduler
 import kotlin.time.Clock
 
@@ -13,7 +13,6 @@ class ScheduleOverdueReminderUseCase(
     private val policy: OverduePolicy,
     private val clock: Clock,
 ) {
-
     suspend operator fun invoke(layawayId: String) {
         val (layaway, customer, product) = getLayawayDetail(layawayId)
 

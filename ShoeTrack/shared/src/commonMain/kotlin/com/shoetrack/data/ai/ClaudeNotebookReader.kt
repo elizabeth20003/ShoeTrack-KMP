@@ -27,23 +27,21 @@ class NotebookReadException(message: String) : Exception(message)
  * Reads a notebook photo with a vision model. Unlike on-device text recognition it copes with
  * cursive handwriting, and it understands the notebook's layout, so no text parsing is needed.
  */
-internal class ClaudeNotebookReader(
-    private val client: HttpClient,
-    private val keys: AiKeyRepository,
-    private val clock: Clock,
-) : NotebookReader {
-
+internal class ClaudeNotebookReader(private val client: HttpClient, private val keys: AiKeyRepository, private val clock: Clock) :
+    NotebookReader {
     override suspend fun read(image: ByteArray): NotebookEntry {
         val key = keys.key() ?: throw NotebookReadException("No API key saved")
-        val response = client.post(ENDPOINT) {
-            header("x-api-key", key)
-            header("anthropic-version", API_VERSION)
-            contentType(ContentType.Application.Json)
-            setBody(request(image))
-        }
+        val response =
+            client.post(ENDPOINT) {
+                header("x-api-key", key)
+                header("anthropic-version", API_VERSION)
+                contentType(ContentType.Application.Json)
+                setBody(request(image))
+            }
         if (!response.status.isSuccess()) throw NotebookReadException("The service answered ${response.status}")
-        val reply = response.body<Reply>().content.firstNotNullOfOrNull { it.text }
-            ?: throw NotebookReadException("The service sent no text")
+        val reply =
+            response.body<Reply>().content.firstNotNullOfOrNull { it.text }
+                ?: throw NotebookReadException("The service sent no text")
         return toEntry(reply)
     }
 
@@ -52,11 +50,16 @@ internal class ClaudeNotebookReader(
         return Request(
             model = MODEL,
             maxTokens = MAX_TOKENS,
-            messages = listOf(
+            messages =
+            listOf(
                 Message(
                     role = "user",
-                    content = listOf(
-                        Block(type = "image", source = Source(type = "base64", mediaType = "image/jpeg", data = Base64.encode(image))),
+                    content =
+                    listOf(
+                        Block(
+                            type = "image",
+                            source = Source(type = "base64", mediaType = "image/jpeg", data = Base64.encode(image)),
+                        ),
                         Block(type = "text", text = prompt(today)),
                     ),
                 ),
@@ -80,11 +83,7 @@ internal class ClaudeNotebookReader(
     }
 
     @Serializable
-    private data class Request(
-        val model: String,
-        @SerialName("max_tokens") val maxTokens: Int,
-        val messages: List<Message>,
-    )
+    private data class Request(val model: String, @SerialName("max_tokens") val maxTokens: Int, val messages: List<Message>)
 
     @Serializable
     private data class Message(val role: String, val content: List<Block>)
@@ -93,11 +92,7 @@ internal class ClaudeNotebookReader(
     private data class Block(val type: String, val text: String? = null, val source: Source? = null)
 
     @Serializable
-    private data class Source(
-        val type: String,
-        @SerialName("media_type") val mediaType: String,
-        val data: String,
-    )
+    private data class Source(val type: String, @SerialName("media_type") val mediaType: String, val data: String)
 
     @Serializable
     private data class Reply(val content: List<ReplyBlock>)
@@ -122,7 +117,8 @@ internal class ClaudeNotebookReader(
 
         val json = Json { ignoreUnknownKeys = true }
 
-        fun prompt(today: LocalDate) = """
+        fun prompt(today: LocalDate) =
+            """
             This is a photo of the handwritten notebook of a shoe store in Colombia, where customers pay for shoes in installments (layaways). Amounts are Colombian pesos and use "." for thousands.
             Each layaway starts with a date (day-month-year, like 27-10-26), then the customer's first and last name, then the shoes (brand, model, color, size written as T or Talla), then the total price. Payments follow as "Abona 50.000" with the remaining "saldo 30.000". Later payments are on their own dated lines below.
             A layaway crossed out with a line is already paid: ignore it and read the last layaway that is not crossed out.
@@ -130,6 +126,6 @@ internal class ClaudeNotebookReader(
             Reply with only a JSON object, no other text:
             {"customerName": "...", "productDescription": "...", "totalPrice": whole pesos or null, "paidAmount": whole pesos or null, "lastPaymentDate": "YYYY-MM-DD" or null}
             paidAmount is everything paid so far: the total minus the last saldo, or the sum of the payments. lastPaymentDate is the date of the most recent payment line. Use null for anything you cannot read.
-        """.trimIndent()
+            """.trimIndent()
     }
 }

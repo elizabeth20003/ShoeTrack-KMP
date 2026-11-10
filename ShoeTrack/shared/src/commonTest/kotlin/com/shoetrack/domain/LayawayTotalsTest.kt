@@ -9,7 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.time.Instant
 
 class LayawayTotalsTest {
-
     private fun summary(balance: Long, state: LayawayState, total: Long = 100_000) = LayawaySummary(
         id = "id",
         customerName = "Ana Perez",
@@ -23,12 +22,13 @@ class LayawayTotalsTest {
 
     @Test
     fun addsUpOnlyTheOpenLayaways() {
-        val totals = listOf(
-            summary(30_000, LayawayState.Active),
-            summary(20_000, LayawayState.Overdue),
-            summary(0, LayawayState.Completed),
-            summary(50_000, LayawayState.Cancelled),
-        ).totals()
+        val totals =
+            listOf(
+                summary(30_000, LayawayState.Active),
+                summary(20_000, LayawayState.Overdue),
+                summary(0, LayawayState.Completed),
+                summary(50_000, LayawayState.Cancelled),
+            ).totals()
 
         assertEquals(Money(50_000), totals.owed)
         assertEquals(2, totals.openCount)

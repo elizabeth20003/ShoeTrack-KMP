@@ -13,25 +13,26 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 class RefreshOverdueUseCaseTest {
-
     private val today = Instant.parse("2026-03-01T00:00:00Z")
     private val repository = FakeLayawayRepository()
-    private val refreshOverdue = RefreshOverdueUseCase(
-        layawayRepository = repository,
-        evaluateOverdue = EvaluateOverdueUseCase(OverduePolicy(overdueAfterDays = 30)),
-        clock = FixedClock(today),
-    )
+    private val refreshOverdue =
+        RefreshOverdueUseCase(
+            layawayRepository = repository,
+            evaluateOverdue = EvaluateOverdueUseCase(OverduePolicy(overdueAfterDays = 30)),
+            clock = FixedClock(today),
+        )
 
     private fun store(id: String, lastPaymentAt: Instant, state: LayawayState = LayawayState.Active) {
-        repository.layaways[id] = Layaway(
-            id = id,
-            customerId = "customer-1",
-            productId = "product-1",
-            remainingBalance = Money(10_000),
-            state = state,
-            createdAt = lastPaymentAt,
-            lastPaymentAt = lastPaymentAt,
-        )
+        repository.layaways[id] =
+            Layaway(
+                id = id,
+                customerId = "customer-1",
+                productId = "product-1",
+                remainingBalance = Money(10_000),
+                state = state,
+                createdAt = lastPaymentAt,
+                lastPaymentAt = lastPaymentAt,
+            )
     }
 
     @Test

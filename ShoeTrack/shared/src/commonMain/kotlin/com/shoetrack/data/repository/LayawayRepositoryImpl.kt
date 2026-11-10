@@ -29,7 +29,6 @@ internal class LayawayRepositoryImpl(
     private val clock: Clock = Clock.System,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : LayawayRepository {
-
     private val layawayQueries = database.layawayQueries
     private val paymentQueries = database.paymentQueries
 
@@ -73,23 +72,24 @@ internal class LayawayRepositoryImpl(
     }
 
     override suspend fun getById(id: String): Layaway? = withContext(dispatcher) {
-        val row = layawayQueries.selectLayawayById(id).executeAsOneOrNull()
-            ?: return@withContext null
+        val row =
+            layawayQueries.selectLayawayById(id).executeAsOneOrNull()
+                ?: return@withContext null
         val payments = paymentQueries.selectPaymentsByLayaway(id).executeAsList().map { it.toDomain() }
         row.toDomain(payments)
     }
 
-    override suspend fun getByState(state: LayawayState): List<Layaway> =
-        withContext(dispatcher) {
-            layawayQueries.selectLayawaysByState(state.toDbValue())
-                .executeAsList()
-                .map { it.toDomain() }
-        }
+    override suspend fun getByState(state: LayawayState): List<Layaway> = withContext(dispatcher) {
+        layawayQueries
+            .selectLayawaysByState(state.toDbValue())
+            .executeAsList()
+            .map { it.toDomain() }
+    }
 
-    override fun observeSummaries(): Flow<List<LayawaySummary>> =
-        layawayQueries.selectAllSummaries(mapper = ::layawaySummaryOf)
-            .asFlow()
-            .mapToList(dispatcher)
+    override fun observeSummaries(): Flow<List<LayawaySummary>> = layawayQueries
+        .selectAllSummaries(mapper = ::layawaySummaryOf)
+        .asFlow()
+        .mapToList(dispatcher)
 
     override suspend fun getPendingSync(): List<Layaway> = withContext(dispatcher) {
         layawayQueries.selectPendingSync().executeAsList().map { it.toDomain() }

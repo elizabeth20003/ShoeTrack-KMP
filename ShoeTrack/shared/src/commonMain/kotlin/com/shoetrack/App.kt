@@ -12,10 +12,7 @@ import com.shoetrack.presentation.theme.ShoeTrackTheme
 import org.koin.mp.KoinPlatform
 
 @Composable
-fun App(
-    layawayToOpen: String? = null,
-    onLayawayOpened: () -> Unit = {},
-) {
+fun App(layawayToOpen: String? = null, onLayawayOpened: () -> Unit = {}) {
     val koin = remember { KoinPlatform.getKoin() }
     val loadPhoto = remember { koin.get<LoadPhotoUseCase>() }
     val syncEngine = remember { koin.get<SyncEngine>() }

@@ -14,7 +14,6 @@ import androidx.compose.runtime.setValue
 import com.shoetrack.notification.NotificationIntents
 
 class MainActivity : ComponentActivity() {
-
     private var layawayToOpen by mutableStateOf<String?>(null)
 
     private val requestNotificationPermission =
@@ -39,8 +38,7 @@ class MainActivity : ComponentActivity() {
         layawayIdFrom(intent)?.let { layawayToOpen = it }
     }
 
-    private fun layawayIdFrom(intent: Intent?): String? =
-        intent?.getStringExtra(NotificationIntents.EXTRA_LAYAWAY_ID)
+    private fun layawayIdFrom(intent: Intent?): String? = intent?.getStringExtra(NotificationIntents.EXTRA_LAYAWAY_ID)
 
     private fun askForNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

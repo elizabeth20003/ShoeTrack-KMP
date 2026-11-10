@@ -12,19 +12,16 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 
 /** Uses WorkManager, which keeps pending work across app restarts and device reboots. */
-class AndroidOverdueReminderScheduler(
-    context: Context,
-    private val clock: Clock = Clock.System,
-) : OverdueReminderScheduler {
-
+class AndroidOverdueReminderScheduler(context: Context, private val clock: Clock = Clock.System) : OverdueReminderScheduler {
     private val workManager = WorkManager.getInstance(context.applicationContext)
 
     override fun schedule(reminder: OverdueReminder) {
         val delay = (reminder.dueAt - clock.now()).coerceAtLeast(Duration.ZERO)
-        val request = OneTimeWorkRequestBuilder<OverdueReminderWorker>()
-            .setInitialDelay(delay.inWholeMilliseconds, TimeUnit.MILLISECONDS)
-            .setInputData(workDataOf(KEY_LAYAWAY_ID to reminder.layawayId))
-            .build()
+        val request =
+            OneTimeWorkRequestBuilder<OverdueReminderWorker>()
+                .setInitialDelay(delay.inWholeMilliseconds, TimeUnit.MILLISECONDS)
+                .setInputData(workDataOf(KEY_LAYAWAY_ID to reminder.layawayId))
+                .build()
         workManager.enqueueUniqueWork(workName(reminder.layawayId), ExistingWorkPolicy.REPLACE, request)
     }
 

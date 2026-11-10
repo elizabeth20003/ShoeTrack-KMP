@@ -19,23 +19,25 @@ import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 class LayawayRepositoryImplTest {
-
-    private val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).also {
-        ShoeTrackDatabase.Schema.create(it)
-    }
-    private val repository = LayawayRepositoryImpl(
-        database = ShoeTrackDatabase(driver),
-        deviceId = "test-device",
-        dispatcher = Dispatchers.Unconfined,
-    )
+    private val driver =
+        JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).also {
+            ShoeTrackDatabase.Schema.create(it)
+        }
+    private val repository =
+        LayawayRepositoryImpl(
+            database = ShoeTrackDatabase(driver),
+            deviceId = "test-device",
+            dispatcher = Dispatchers.Unconfined,
+        )
 
     private val now = Instant.parse("2026-01-01T00:00:00Z")
-    private val product = Product(
-        id = "product-1",
-        description = "Nike Air Force 42",
-        photoPath = "photos/product-1.jpg",
-        totalPrice = Money(10_000),
-    )
+    private val product =
+        Product(
+            id = "product-1",
+            description = "Nike Air Force 42",
+            photoPath = "photos/product-1.jpg",
+            totalPrice = Money(10_000),
+        )
 
     @AfterTest
     fun closeDatabase() {
@@ -45,8 +47,7 @@ class LayawayRepositoryImplTest {
     private fun newLayaway(id: String = "layaway-1"): Layaway =
         CreateLayawayUseCase()(id, customerId = "customer-1", product = product, now = now)
 
-    private fun payment(amount: Long) =
-        Payment("payment-1", "layaway-1", Money(amount), now, "test-device")
+    private fun payment(amount: Long) = Payment("payment-1", "layaway-1", Money(amount), now, "test-device")
 
     @Test
     fun createdLayawayCanBeReadBack() = runBlocking {

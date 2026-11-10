@@ -36,7 +36,6 @@ class StartLayawayUseCase(
     private val idGenerator: IdGenerator,
     private val clock: Clock,
 ) {
-
     suspend operator fun invoke(request: NewLayaway): Layaway {
         require(request.customerName.isNotBlank()) { "The customer name is required" }
         require(request.productDescription.isNotBlank()) { "The product description is required" }
@@ -49,21 +48,24 @@ class StartLayawayUseCase(
         val now = clock.now()
         val startedAt = request.lastPaymentAt ?: now
         require(startedAt <= now) { "The last payment cannot be in the future" }
-        val existingCustomer = request.existingCustomerId?.let { id ->
-            requireNotNull(customerRepository.getById(id)) { "Customer $id does not exist" }
-        }
-        val customer = existingCustomer ?: Customer(
-            id = idGenerator.newId(),
-            name = request.customerName.trim(),
-            phone = PhoneNumberRules.normalize(request.customerPhone),
-            registeredAt = now,
-        )
-        val product = Product(
-            id = idGenerator.newId(),
-            description = request.productDescription.trim(),
-            photoPath = request.productPhotoPath,
-            totalPrice = request.productPrice,
-        )
+        val existingCustomer =
+            request.existingCustomerId?.let { id ->
+                requireNotNull(customerRepository.getById(id)) { "Customer $id does not exist" }
+            }
+        val customer =
+            existingCustomer ?: Customer(
+                id = idGenerator.newId(),
+                name = request.customerName.trim(),
+                phone = PhoneNumberRules.normalize(request.customerPhone),
+                registeredAt = now,
+            )
+        val product =
+            Product(
+                id = idGenerator.newId(),
+                description = request.productDescription.trim(),
+                photoPath = request.productPhotoPath,
+                totalPrice = request.productPrice,
+            )
         val layaway = createLayaway(idGenerator.newId(), customer.id, product, startedAt)
 
         if (existingCustomer == null) customerRepository.save(customer)
@@ -71,11 +73,12 @@ class StartLayawayUseCase(
         layawayRepository.create(layaway)
         scheduleReminder(layaway.id)
 
-        val started = if (request.initialPayment.isPositive) {
-            registerPayment(layaway.id, request.initialPayment, paidAt = startedAt)
-        } else {
-            layaway
-        }
+        val started =
+            if (request.initialPayment.isPositive) {
+                registerPayment(layaway.id, request.initialPayment, paidAt = startedAt)
+            } else {
+                layaway
+            }
         // A layaway copied from the notebook may already be past its due date.
         return refreshOverdue().firstOrNull { it.id == started.id } ?: started
     }

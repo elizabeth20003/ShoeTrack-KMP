@@ -34,11 +34,7 @@ internal data class PhotoMessage(val name: String, val base64: String?) : SyncMe
 internal data object DoneMessage : SyncMessage
 
 @Serializable
-internal data class SnapshotDto(
-    val customers: List<CustomerDto>,
-    val products: List<ProductDto>,
-    val layaways: List<LayawayDto>,
-)
+internal data class SnapshotDto(val customers: List<CustomerDto>, val products: List<ProductDto>, val layaways: List<LayawayDto>)
 
 @Serializable
 internal data class CustomerDto(val id: String, val name: String, val phone: String, val registeredAt: Long)
@@ -70,7 +66,8 @@ internal data class LayawayDto(
 internal fun SyncSnapshot.toDto() = SnapshotDto(
     customers = customers.map { CustomerDto(it.id, it.name, it.phone, it.registeredAt.toEpochMilliseconds()) },
     products = products.map { ProductDto(it.id, it.description, it.photoPath, it.totalPrice.cents) },
-    layaways = layaways.map { layaway ->
+    layaways =
+    layaways.map { layaway ->
         LayawayDto(
             id = layaway.id,
             customerId = layaway.customerId,
@@ -79,7 +76,8 @@ internal fun SyncSnapshot.toDto() = SnapshotDto(
             state = layaway.state.toDbValue(),
             createdAt = layaway.createdAt.toEpochMilliseconds(),
             lastPaymentAt = layaway.lastPaymentAt.toEpochMilliseconds(),
-            payments = layaway.payments.map {
+            payments =
+            layaway.payments.map {
                 PaymentDto(it.id, it.layawayId, it.amount.cents, it.paidAt.toEpochMilliseconds(), it.recordedByDeviceId)
             },
         )
@@ -89,7 +87,8 @@ internal fun SyncSnapshot.toDto() = SnapshotDto(
 internal fun SnapshotDto.toDomain() = SyncSnapshot(
     customers = customers.map { Customer(it.id, it.name, it.phone, Instant.fromEpochMilliseconds(it.registeredAt)) },
     products = products.map { Product(it.id, it.description, it.photoPath, Money(it.totalPriceCents)) },
-    layaways = layaways.map { layaway ->
+    layaways =
+    layaways.map { layaway ->
         Layaway(
             id = layaway.id,
             customerId = layaway.customerId,
@@ -98,8 +97,15 @@ internal fun SnapshotDto.toDomain() = SyncSnapshot(
             state = layaway.state.toLayawayState(),
             createdAt = Instant.fromEpochMilliseconds(layaway.createdAt),
             lastPaymentAt = Instant.fromEpochMilliseconds(layaway.lastPaymentAt),
-            payments = layaway.payments.map {
-                Payment(it.id, it.layawayId, Money(it.amountCents), Instant.fromEpochMilliseconds(it.paidAt), it.recordedByDeviceId)
+            payments =
+            layaway.payments.map {
+                Payment(
+                    it.id,
+                    it.layawayId,
+                    Money(it.amountCents),
+                    Instant.fromEpochMilliseconds(it.paidAt),
+                    it.recordedByDeviceId,
+                )
             },
         )
     },

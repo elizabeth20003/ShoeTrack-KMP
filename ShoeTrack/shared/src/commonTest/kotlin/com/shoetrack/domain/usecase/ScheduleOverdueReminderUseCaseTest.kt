@@ -18,7 +18,6 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 class ScheduleOverdueReminderUseCaseTest {
-
     private val now = Instant.parse("2026-02-01T00:00:00Z")
     private val layaways = FakeLayawayRepository()
     private val customers = FakeCustomerRepository()
@@ -29,15 +28,16 @@ class ScheduleOverdueReminderUseCaseTest {
     private fun store(state: LayawayState) {
         customers.customers["customer-1"] = Customer("customer-1", "Ana Perez", "3001234567", now)
         products.products["product-1"] = Product("product-1", "Nike Air Force 42", "", Money(10_000))
-        layaways.layaways["layaway-1"] = Layaway(
-            id = "layaway-1",
-            customerId = "customer-1",
-            productId = "product-1",
-            remainingBalance = Money(10_000),
-            state = state,
-            createdAt = now,
-            lastPaymentAt = now,
-        )
+        layaways.layaways["layaway-1"] =
+            Layaway(
+                id = "layaway-1",
+                customerId = "customer-1",
+                productId = "product-1",
+                remainingBalance = Money(10_000),
+                state = state,
+                createdAt = now,
+                lastPaymentAt = now,
+            )
     }
 
     @Test

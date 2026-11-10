@@ -7,12 +7,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class NotebookParserTest {
-
     @Test
     fun readsACleanLine() {
-        val entry = NotebookParser.parse(
-            "03/10/26 Alba Calambas Maxten gris hombre T=140.000\nAbona 30.000 Saldo $110.000",
-        )
+        val entry =
+            NotebookParser.parse(
+                "03/10/26 Alba Calambas Maxten gris hombre T=140.000\nAbona 30.000 Saldo $110.000",
+            )
 
         assertEquals("Alba Calambas", entry.customerName)
         assertEquals("Maxten gris hombre", entry.productDescription)
@@ -32,7 +32,8 @@ class NotebookParserTest {
 
     @Test
     fun readsTheRealPhotoTextOfAClosePhotoOfTheNotebook() {
-        val text = """
+        val text =
+            """
             10
             2?-08-26 AleJondra Tefray de
             13509D40.QO
@@ -41,7 +42,7 @@ class NotebookParserTest {
             03/101 26 Alba Cclambu s Maxlen grs
             honbe T= 140.000
             Abona 30-000 Saldo io.000
-        """.trimIndent()
+            """.trimIndent()
 
         val entry = NotebookParser.parse(text)
 
@@ -55,7 +56,8 @@ class NotebookParserTest {
 
     @Test
     fun readsTheRealPhotoTextWhenTheDateAndTheLastBalanceAreUnreadable() {
-        val text = """
+        val text =
+            """
             ANDS
             RY
             04l 26 Allba Aleundiq Ryrz
@@ -63,7 +65,7 @@ class NotebookParserTest {
             Talla 40 Suldo 1so000
             Abon 5o.000 suldo
             LOO.O
-        """.trimIndent()
+            """.trimIndent()
 
         val entry = NotebookParser.parse(text)
 
@@ -91,11 +93,12 @@ class NotebookParserTest {
 
     @Test
     fun readsALayawayWithSeveralPaymentsWrittenOnSeparateDatedLines() {
-        val text = """
+        val text =
+            """
             27-10-26 Paola Flor Vans blanco/negro alto T37
             80.000 Abona: $50.000 saldo: 30.000
             3-11-26 Abona $10.000 saldo: 20.000
-        """.trimIndent()
+            """.trimIndent()
 
         val entry = NotebookParser.parse(text)
 
@@ -108,13 +111,14 @@ class NotebookParserTest {
 
     @Test
     fun readsTheRealPhotoTextWhereTheMonthWasReadAsLetters() {
-        val text = """
+        val text =
+            """
             04 ll 26 Alba Alejundi Ryiz
             Maxten rs todu nneą tn
             Talla = 4b Suldo sbo00
             Abonu 5o 000 suldo
             (OO.0
-        """.trimIndent()
+            """.trimIndent()
 
         val entry = NotebookParser.parse(text)
 

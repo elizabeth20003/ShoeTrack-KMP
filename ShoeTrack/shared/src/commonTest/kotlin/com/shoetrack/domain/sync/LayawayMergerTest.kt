@@ -10,15 +10,11 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 class LayawayMergerTest {
-
     private val merger = LayawayMerger()
     private val start = Instant.parse("2026-01-01T00:00:00Z")
     private val price = Money(10_000)
 
-    private fun layaway(
-        vararg payments: Payment,
-        state: LayawayState = LayawayState.Active,
-    ): Layaway {
+    private fun layaway(vararg payments: Payment, state: LayawayState = LayawayState.Active): Layaway {
         val paid = payments.fold(Money.ZERO) { total, payment -> total + payment.amount }
         return Layaway(
             id = "layaway-1",

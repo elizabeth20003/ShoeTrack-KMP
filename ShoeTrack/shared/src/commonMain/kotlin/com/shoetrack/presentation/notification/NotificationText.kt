@@ -9,16 +9,14 @@ import shoetrack.shared.generated.resources.notification_overdue_title
 
 data class NotificationText(val title: String, val body: String)
 
-suspend fun overdueNotificationText(
-    customerName: String,
-    productDescription: String,
-    remainingBalance: Money,
-): NotificationText = NotificationText(
-    title = getString(Res.string.notification_overdue_title),
-    body = getString(
-        Res.string.notification_overdue_body,
-        customerName,
-        productDescription,
-        remainingBalance.format(),
-    ),
-)
+suspend fun overdueNotificationText(customerName: String, productDescription: String, remainingBalance: Money): NotificationText =
+    NotificationText(
+        title = getString(Res.string.notification_overdue_title),
+        body =
+        getString(
+            Res.string.notification_overdue_body,
+            customerName,
+            productDescription,
+            remainingBalance.format(),
+        ),
+    )

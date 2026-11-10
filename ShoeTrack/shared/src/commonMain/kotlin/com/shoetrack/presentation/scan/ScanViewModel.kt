@@ -43,7 +43,6 @@ class ScanViewModel(
     private val keys: AiKeyRepository,
     private val clock: Clock,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(ScanUiState())
     val uiState: StateFlow<ScanUiState> = _uiState.asStateFlow()
 
@@ -80,22 +79,17 @@ class ScanViewModel(
         }
     }
 
-    private suspend fun finish(
-        entry: NotebookEntry?,
-        text: String?,
-        hasFailed: Boolean,
-        hasAiKey: Boolean,
-        aiUnavailable: Boolean,
-    ) {
+    private suspend fun finish(entry: NotebookEntry?, text: String?, hasFailed: Boolean, hasAiKey: Boolean, aiUnavailable: Boolean) {
         val checked = entry?.withoutFutureDate()
         val foundNothing = checked == NotebookEntry()
-        _uiState.value = ScanUiState(
-            text = text,
-            hasFailed = hasFailed,
-            foundNothing = foundNothing,
-            hasAiKey = hasAiKey,
-            aiUnavailable = aiUnavailable,
-        )
+        _uiState.value =
+            ScanUiState(
+                text = text,
+                hasFailed = hasFailed,
+                foundNothing = foundNothing,
+                hasAiKey = hasAiKey,
+                aiUnavailable = aiUnavailable,
+            )
         if (checked != null && !foundNothing) _events.send(ScanEvent.EntryRead(checked))
     }
 

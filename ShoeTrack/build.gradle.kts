@@ -9,4 +9,17 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.sqldelight) apply false
+    alias(libs.plugins.ktlint) apply false
+}
+
+// Code style: `./gradlew ktlintCheck` reports problems and `./gradlew ktlintFormat` fixes most of them.
+subprojects {
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
+    extensions.configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+        filter {
+            // Generated code (SQLDelight, Compose resources) is not ours to format.
+            exclude { it.file.path.replace('\\', '/').contains("/build/") }
+        }
+    }
 }

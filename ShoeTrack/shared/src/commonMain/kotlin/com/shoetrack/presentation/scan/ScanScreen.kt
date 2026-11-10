@@ -60,10 +60,11 @@ import shoetrack.shared.generated.resources.take_photo
 @Composable
 fun ScanScreen(viewModel: ScanViewModel, onBack: () -> Unit, onEntryRead: (NotebookEntry) -> Unit) {
     val uiState by viewModel.uiState.collectAsState()
-    val photoPicker = rememberPhotoPicker(
-        onPhotoPicked = viewModel::onPhotoPicked,
-        maxSidePx = SCAN_PHOTO_SIDE_PX,
-    )
+    val photoPicker =
+        rememberPhotoPicker(
+            onPhotoPicked = viewModel::onPhotoPicked,
+            maxSidePx = SCAN_PHOTO_SIDE_PX,
+        )
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -94,7 +95,8 @@ internal fun ScanContent(
 ) {
     Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
         Column(
-            modifier = Modifier
+            modifier =
+            Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
@@ -142,7 +144,8 @@ internal fun ScanContent(
 @Composable
 private fun AiKeyCard(hasKey: Boolean, onSave: (String) -> Unit, onRemove: () -> Unit) {
     Column(
-        modifier = Modifier
+        modifier =
+        Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
             .padding(16.dp),
@@ -186,56 +189,62 @@ private fun AiKeyCard(hasKey: Boolean, onSave: (String) -> Unit, onRemove: () ->
 @Composable
 private fun ScanResult(uiState: ScanUiState) {
     when {
-        uiState.isReading -> Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            CircularProgressIndicator(modifier = Modifier.padding(4.dp))
-            Text(stringResource(Res.string.scan_reading))
-        }
+        uiState.isReading ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                CircularProgressIndicator(modifier = Modifier.padding(4.dp))
+                Text(stringResource(Res.string.scan_reading))
+            }
 
-        uiState.hasFailed -> Text(
-            text = stringResource(Res.string.scan_failed),
-            color = MaterialTheme.colorScheme.error,
-        )
-
-        uiState.foundNothing -> Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(stringResource(Res.string.scan_no_layaway), style = MaterialTheme.typography.titleMedium)
+        uiState.hasFailed ->
             Text(
-                text = stringResource(Res.string.scan_no_layaway_hint),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = stringResource(Res.string.scan_failed),
+                color = MaterialTheme.colorScheme.error,
             )
-            Text(stringResource(Res.string.scan_result_title), style = MaterialTheme.typography.labelLarge)
-            SelectionContainer {
-                Text(
-                    text = uiState.text.orEmpty().ifBlank { stringResource(Res.string.scan_nothing_found) },
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-        }
 
-        uiState.text != null -> Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(stringResource(Res.string.scan_result_title), style = MaterialTheme.typography.titleMedium)
-            SelectionContainer {
+        uiState.foundNothing ->
+            Column(
+                modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(stringResource(Res.string.scan_no_layaway), style = MaterialTheme.typography.titleMedium)
                 Text(
-                    text = uiState.text.ifBlank { stringResource(Res.string.scan_nothing_found) },
-                    style = MaterialTheme.typography.bodyLarge,
+                    text = stringResource(Res.string.scan_no_layaway_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Text(stringResource(Res.string.scan_result_title), style = MaterialTheme.typography.labelLarge)
+                SelectionContainer {
+                    Text(
+                        text = uiState.text.orEmpty().ifBlank { stringResource(Res.string.scan_nothing_found) },
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
             }
-        }
+
+        uiState.text != null ->
+            Column(
+                modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(stringResource(Res.string.scan_result_title), style = MaterialTheme.typography.titleMedium)
+                SelectionContainer {
+                    Text(
+                        text = uiState.text.ifBlank { stringResource(Res.string.scan_nothing_found) },
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
     }
 }
 

@@ -11,7 +11,6 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 class EvaluateOverdueUseCaseTest {
-
     private val evaluateOverdue = EvaluateOverdueUseCase(OverduePolicy(overdueAfterDays = 30))
     private val lastPaymentAt = Instant.parse("2026-01-01T00:00:00Z")
 

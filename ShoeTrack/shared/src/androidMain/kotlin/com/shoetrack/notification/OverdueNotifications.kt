@@ -20,15 +20,17 @@ internal suspend fun showOverdueNotification(context: Context, layawayId: String
     if (!manager.areNotificationsEnabled()) return
 
     createChannel(context)
-    val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-        .setSmallIcon(context.applicationInfo.icon)
-        .setContentTitle(text.title)
-        .setContentText(text.body)
-        .setStyle(NotificationCompat.BigTextStyle().bigText(text.body))
-        .setContentIntent(openLayawayIntent(context, layawayId))
-        .setAutoCancel(true)
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .build()
+    val notification =
+        NotificationCompat
+            .Builder(context, CHANNEL_ID)
+            .setSmallIcon(context.applicationInfo.icon)
+            .setContentTitle(text.title)
+            .setContentText(text.body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text.body))
+            .setContentIntent(openLayawayIntent(context, layawayId))
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
 
     @Suppress("MissingPermission") // areNotificationsEnabled() was checked above
     manager.notify(layawayId.hashCode(), notification)
@@ -36,21 +38,23 @@ internal suspend fun showOverdueNotification(context: Context, layawayId: String
 
 private suspend fun createChannel(context: Context) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-    val channel = NotificationChannel(
-        CHANNEL_ID,
-        getString(Res.string.notification_channel_name),
-        NotificationManager.IMPORTANCE_DEFAULT,
-    )
+    val channel =
+        NotificationChannel(
+            CHANNEL_ID,
+            getString(Res.string.notification_channel_name),
+            NotificationManager.IMPORTANCE_DEFAULT,
+        )
     context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
 }
 
 private fun openLayawayIntent(context: Context, layawayId: String): PendingIntent {
-    val launchIntent = checkNotNull(context.packageManager.getLaunchIntentForPackage(context.packageName)) {
-        "The app has no launcher activity"
-    }.apply {
-        putExtra(NotificationIntents.EXTRA_LAYAWAY_ID, layawayId)
-        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-    }
+    val launchIntent =
+        checkNotNull(context.packageManager.getLaunchIntentForPackage(context.packageName)) {
+            "The app has no launcher activity"
+        }.apply {
+            putExtra(NotificationIntents.EXTRA_LAYAWAY_ID, layawayId)
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
     return PendingIntent.getActivity(
         context,
         layawayId.hashCode(),

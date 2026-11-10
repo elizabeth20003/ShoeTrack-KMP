@@ -17,19 +17,20 @@ class RegisterPaymentUseCase(
     private val deviceId: String,
     private val scheduleReminder: ScheduleOverdueReminderUseCase,
 ) {
-
     suspend operator fun invoke(layawayId: String, amount: Money, paidAt: Instant = clock.now()): Layaway {
         require(amount.isPositive) { "The payment amount must be greater than zero" }
 
-        val layaway = layawayRepository.getById(layawayId)
-            ?: throw LayawayNotFoundException(layawayId)
-        val payment = Payment(
-            id = idGenerator.newId(),
-            layawayId = layaway.id,
-            amount = amount,
-            paidAt = paidAt,
-            recordedByDeviceId = deviceId,
-        )
+        val layaway =
+            layawayRepository.getById(layawayId)
+                ?: throw LayawayNotFoundException(layawayId)
+        val payment =
+            Payment(
+                id = idGenerator.newId(),
+                layawayId = layaway.id,
+                amount = amount,
+                paidAt = paidAt,
+                recordedByDeviceId = deviceId,
+            )
 
         val updated = processPayment(layaway, payment)
         layawayRepository.registerPayment(updated, payment)

@@ -15,9 +15,10 @@ data class LayawaySummary(
 ) {
     /** How much of the price is paid, from 0 to 1. */
     val paidFraction: Float
-        get() = if (totalPrice.isPositive) {
-            (1f - remainingBalance.cents.toFloat() / totalPrice.cents).coerceIn(0f, 1f)
-        } else {
-            0f
-        }
+        get() =
+            if (totalPrice.isPositive) {
+                (1f - remainingBalance.cents.toFloat() / totalPrice.cents).coerceIn(0f, 1f)
+            } else {
+                0f
+            }
 }

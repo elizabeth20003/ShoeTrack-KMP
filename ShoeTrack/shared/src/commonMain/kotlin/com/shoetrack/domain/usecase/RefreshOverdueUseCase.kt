@@ -10,13 +10,14 @@ class RefreshOverdueUseCase(
     private val evaluateOverdue: EvaluateOverdueUseCase,
     private val clock: Clock,
 ) {
-
     /** Returns the layaways that became overdue now. */
     suspend operator fun invoke(): List<Layaway> {
         val now = clock.now()
-        val newlyOverdue = layawayRepository.getByState(LayawayState.Active)
-            .map { evaluateOverdue(it, now) }
-            .filter { it.state == LayawayState.Overdue }
+        val newlyOverdue =
+            layawayRepository
+                .getByState(LayawayState.Active)
+                .map { evaluateOverdue(it, now) }
+                .filter { it.state == LayawayState.Overdue }
 
         newlyOverdue.forEach { layawayRepository.updateState(it) }
         return newlyOverdue

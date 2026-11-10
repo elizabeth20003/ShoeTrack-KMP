@@ -30,7 +30,6 @@ import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 class NewLayawayViewModelTest : MainDispatcherTest() {
-
     private val customers = FakeCustomerRepository()
     private val products = FakeProductRepository()
     private val layaways = FakeLayawayRepository()
@@ -46,7 +45,8 @@ class NewLayawayViewModelTest : MainDispatcherTest() {
                 productRepository = products,
                 layawayRepository = layaways,
                 createLayaway = CreateLayawayUseCase(),
-                registerPayment = RegisterPaymentUseCase(
+                registerPayment =
+                RegisterPaymentUseCase(
                     layawayRepository = layaways,
                     processPayment = ProcessPaymentUseCase(),
                     idGenerator = idGenerator,
@@ -140,7 +140,12 @@ class NewLayawayViewModelTest : MainDispatcherTest() {
         val photoName = viewModel.uiState.value.photoName
         assertNotNull(photoName)
         assertContentEquals(byteArrayOf(1, 2, 3), photos.photos[photoName])
-        assertEquals(photoName, products.products.values.single().photoPath)
+        assertEquals(
+            photoName,
+            products.products.values
+                .single()
+                .photoPath,
+        )
     }
 
     @Test
@@ -182,7 +187,11 @@ class NewLayawayViewModelTest : MainDispatcherTest() {
 
         viewModel.onCustomerNameChange("ana")
 
-        assertEquals(listOf("c1"), viewModel.uiState.value.customerSuggestions.map { it.id })
+        assertEquals(
+            listOf("c1"),
+            viewModel.uiState.value.customerSuggestions
+                .map { it.id },
+        )
     }
 
     @Test
@@ -198,7 +207,12 @@ class NewLayawayViewModelTest : MainDispatcherTest() {
 
         assertEquals("3001234567", viewModel.uiState.value.customerPhone)
         assertEquals(1, customers.customers.size)
-        assertEquals("c1", layaways.layaways.values.single().customerId)
+        assertEquals(
+            "c1",
+            layaways.layaways.values
+                .single()
+                .customerId,
+        )
     }
 
     @Test

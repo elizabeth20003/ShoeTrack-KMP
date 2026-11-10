@@ -1,5 +1,6 @@
 package com.shoetrack
 
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.shoetrack.data.local.JvmDatabaseDriverFactory
@@ -24,6 +25,7 @@ private fun runApplication() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "ShoeTrack",
+        icon = painterResource("icon.png"),
     ) {
         App()
     }

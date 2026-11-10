@@ -20,7 +20,6 @@ internal class FileSystemPhotoStorage(
     private val idGenerator: IdGenerator,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : PhotoStorage {
-
     override suspend fun save(imageBytes: ByteArray): String = withContext(dispatcher) {
         SystemFileSystem.createDirectories(Path(photosDirectory))
         val name = "${idGenerator.newId()}.jpg"

@@ -47,10 +47,9 @@ private fun topViewController(): UIViewController? {
 
 /** A sheet with the camera preview that closes itself as soon as it reads a QR code. */
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-private class ScannerViewController(
-    private val onCode: (String) -> Unit,
-) : UIViewController(nibName = null, bundle = null), AVCaptureMetadataOutputObjectsDelegateProtocol {
-
+private class ScannerViewController(private val onCode: (String) -> Unit) :
+    UIViewController(nibName = null, bundle = null),
+    AVCaptureMetadataOutputObjectsDelegateProtocol {
     private val session = AVCaptureSession()
     private var previewLayer: AVCaptureVideoPreviewLayer? = null
     private var finished = false
@@ -89,11 +88,7 @@ private class ScannerViewController(
         session.stopRunning()
     }
 
-    override fun captureOutput(
-        output: AVCaptureOutput,
-        didOutputMetadataObjects: List<*>,
-        fromConnection: AVCaptureConnection,
-    ) {
+    override fun captureOutput(output: AVCaptureOutput, didOutputMetadataObjects: List<*>, fromConnection: AVCaptureConnection) {
         val code = (didOutputMetadataObjects.firstOrNull() as? AVMetadataMachineReadableCodeObject)?.stringValue
         if (code == null || finished) return
         finished = true

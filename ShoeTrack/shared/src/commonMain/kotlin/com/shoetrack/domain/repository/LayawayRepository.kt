@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.Flow
  * use [getById] for the full payment history.
  */
 interface LayawayRepository {
-
     suspend fun create(layaway: Layaway)
 
     /** Saves the [payment] and the already-updated [layaway] in one transaction. */

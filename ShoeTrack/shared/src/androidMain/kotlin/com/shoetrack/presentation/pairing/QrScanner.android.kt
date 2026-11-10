@@ -18,7 +18,9 @@ actual fun rememberQrScanner(onCode: (String) -> Unit): QrScanner? {
             // Google's scanner screen brings its own camera UI, so the app needs no camera permission.
             override fun scan() {
                 val options = GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
-                GmsBarcodeScanning.getClient(context, options).startScan()
+                GmsBarcodeScanning
+                    .getClient(context, options)
+                    .startScan()
                     .addOnSuccessListener { barcode -> barcode.rawValue?.let(currentOnCode) }
             }
         }

@@ -14,8 +14,7 @@ fun Money.format(): String = "$ ${(cents / 100).withThousandsSeparator()}"
 /** A fraction such as 0.6 as "60%". */
 fun Float.formatAsPercent(): String = "${(this * 100).roundToInt()}%"
 
-fun Instant.formatAsDate(): String =
-    toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
+fun Instant.formatAsDate(): String = toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
 
 fun Instant.formatAsTime(): String {
     val time = toLocalDateTime(TimeZone.currentSystemDefault()).time
@@ -23,11 +22,13 @@ fun Instant.formatAsTime(): String {
 }
 
 /** Parses what the user typed as whole currency units, ignoring any non-digit character. */
-fun String.toMoneyOrNull(): Money? =
-    filter(Char::isDigit).take(MAX_MONEY_DIGITS).toLongOrNull()?.let(Money::fromUnits)
+fun String.toMoneyOrNull(): Money? = filter(Char::isDigit).take(MAX_MONEY_DIGITS).toLongOrNull()?.let(Money::fromUnits)
 
-private fun Long.withThousandsSeparator(): String =
-    toString().reversed().chunked(3).joinToString(".").reversed()
+private fun Long.withThousandsSeparator(): String = toString()
+    .reversed()
+    .chunked(3)
+    .joinToString(".")
+    .reversed()
 
 /** The date picker works in UTC days; this turns its pick into the start of that day on this device. */
 fun Long.pickedDateToInstant(): Instant {

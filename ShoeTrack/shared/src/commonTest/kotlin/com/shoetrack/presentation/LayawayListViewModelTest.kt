@@ -6,11 +6,11 @@ import com.shoetrack.domain.fakes.FixedClock
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Money
+import com.shoetrack.domain.sync.PairingCode
 import com.shoetrack.domain.usecase.EvaluateOverdueUseCase
 import com.shoetrack.domain.usecase.ObserveLayawaysUseCase
 import com.shoetrack.domain.usecase.PairWithDeviceUseCase
 import com.shoetrack.domain.usecase.RefreshOverdueUseCase
-import com.shoetrack.domain.sync.PairingCode
 import com.shoetrack.presentation.list.LayawayListUiState
 import com.shoetrack.presentation.list.LayawayListViewModel
 import com.shoetrack.presentation.list.PairingState
@@ -23,7 +23,6 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 class LayawayListViewModelTest : MainDispatcherTest() {
-
     private val today = Instant.parse("2026-03-01T00:00:00Z")
     private val layaways = FakeLayawayRepository()
 
@@ -36,21 +35,17 @@ class LayawayListViewModelTest : MainDispatcherTest() {
         pairWithDevice = PairWithDeviceUseCase(syncEngine),
     )
 
-    private fun store(
-        id: String,
-        lastPaymentAt: Instant,
-        customerId: String = "customer-1",
-        productId: String = "product-1",
-    ) {
-        layaways.layaways[id] = Layaway(
-            id = id,
-            customerId = customerId,
-            productId = productId,
-            remainingBalance = Money(10_000),
-            state = LayawayState.Active,
-            createdAt = lastPaymentAt,
-            lastPaymentAt = lastPaymentAt,
-        )
+    private fun store(id: String, lastPaymentAt: Instant, customerId: String = "customer-1", productId: String = "product-1") {
+        layaways.layaways[id] =
+            Layaway(
+                id = id,
+                customerId = customerId,
+                productId = productId,
+                remainingBalance = Money(10_000),
+                state = LayawayState.Active,
+                createdAt = lastPaymentAt,
+                lastPaymentAt = lastPaymentAt,
+            )
     }
 
     @Test

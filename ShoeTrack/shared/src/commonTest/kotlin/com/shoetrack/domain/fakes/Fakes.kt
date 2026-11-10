@@ -4,8 +4,8 @@ import com.shoetrack.domain.model.Customer
 import com.shoetrack.domain.model.Layaway
 import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.LayawaySummary
-import com.shoetrack.domain.model.OverdueReminder
 import com.shoetrack.domain.model.OverduePolicy
+import com.shoetrack.domain.model.OverdueReminder
 import com.shoetrack.domain.model.Payment
 import com.shoetrack.domain.model.Product
 import com.shoetrack.domain.model.SyncSnapshot
@@ -16,9 +16,9 @@ import com.shoetrack.domain.repository.LayawayRepository
 import com.shoetrack.domain.repository.ProductRepository
 import com.shoetrack.domain.repository.SyncRepository
 import com.shoetrack.domain.service.IdGenerator
+import com.shoetrack.domain.service.NotebookReader
 import com.shoetrack.domain.service.OverdueReminderScheduler
 import com.shoetrack.domain.service.PhotoStorage
-import com.shoetrack.domain.service.NotebookReader
 import com.shoetrack.domain.service.TextRecognizer
 import com.shoetrack.domain.sync.PairingCode
 import com.shoetrack.domain.sync.SyncEngine
@@ -60,8 +60,7 @@ class FakeLayawayRepository : LayawayRepository {
 
     override suspend fun getById(id: String): Layaway? = layaways[id]
 
-    override suspend fun getByState(state: LayawayState): List<Layaway> =
-        layaways.values.filter { it.state == state }
+    override suspend fun getByState(state: LayawayState): List<Layaway> = layaways.values.filter { it.state == state }
 
     override fun observeSummaries(): Flow<List<LayawaySummary>> = flow {
         observeFailure?.let { throw it }
@@ -169,7 +168,6 @@ class FakeSyncRepository(
     private val customers: FakeCustomerRepository,
     private val products: FakeProductRepository,
 ) : SyncRepository {
-
     override suspend fun snapshot() = SyncSnapshot(
         customers = customers.customers.values.toList(),
         products = products.products.values.toList(),

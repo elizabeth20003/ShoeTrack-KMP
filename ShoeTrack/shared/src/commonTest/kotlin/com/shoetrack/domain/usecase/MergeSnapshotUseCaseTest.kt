@@ -26,19 +26,19 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 class MergeSnapshotUseCaseTest {
-
     private val start = Instant.parse("2026-01-01T00:00:00Z")
     private val customers = FakeCustomerRepository()
     private val products = FakeProductRepository()
     private val layaways = FakeLayawayRepository()
     private val scheduler = FakeOverdueReminderScheduler()
-    private val mergeSnapshot = MergeSnapshotUseCase(
-        syncRepository = FakeSyncRepository(layaways, customers, products),
-        merger = LayawayMerger(),
-        evaluateOverdue = EvaluateOverdueUseCase(),
-        scheduleReminder = scheduleReminderOf(layaways, customers, products, scheduler),
-        clock = FixedClock(start + 1.days),
-    )
+    private val mergeSnapshot =
+        MergeSnapshotUseCase(
+            syncRepository = FakeSyncRepository(layaways, customers, products),
+            merger = LayawayMerger(),
+            evaluateOverdue = EvaluateOverdueUseCase(),
+            scheduleReminder = scheduleReminderOf(layaways, customers, products, scheduler),
+            clock = FixedClock(start + 1.days),
+        )
 
     private val customer = Customer("customer-1", "Ana Perez", "3001234567", start)
     private val product = Product("product-1", "Nike Air Force 42", "photo-1.jpg", Money(10_000))
@@ -60,8 +60,7 @@ class MergeSnapshotUseCaseTest {
     private fun payment(id: String, amount: Long, day: Int, device: String) =
         Payment(id, "layaway-1", Money(amount), start + day.days, device)
 
-    private fun remoteWith(layaway: Layaway) =
-        SyncSnapshot(listOf(customer), listOf(product), listOf(layaway))
+    private fun remoteWith(layaway: Layaway) = SyncSnapshot(listOf(customer), listOf(product), listOf(layaway))
 
     private fun storeLocally(layaway: Layaway) {
         customers.customers[customer.id] = customer
@@ -105,13 +104,14 @@ class MergeSnapshotUseCaseTest {
     fun anOverdueLayawayIsNotReportedAsChanged() = runTest {
         val old = layaway()
         storeLocally(old.copy(state = LayawayState.Overdue))
-        val lateMerge = MergeSnapshotUseCase(
-            syncRepository = FakeSyncRepository(layaways, customers, products),
-            merger = LayawayMerger(),
-            evaluateOverdue = EvaluateOverdueUseCase(),
-            scheduleReminder = scheduleReminderOf(layaways, customers, products, scheduler),
-            clock = FixedClock(start + 40.days),
-        )
+        val lateMerge =
+            MergeSnapshotUseCase(
+                syncRepository = FakeSyncRepository(layaways, customers, products),
+                merger = LayawayMerger(),
+                evaluateOverdue = EvaluateOverdueUseCase(),
+                scheduleReminder = scheduleReminderOf(layaways, customers, products, scheduler),
+                clock = FixedClock(start + 40.days),
+            )
 
         assertFalse(lateMerge(remoteWith(old)).hasChanges)
     }

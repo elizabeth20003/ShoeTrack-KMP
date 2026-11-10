@@ -6,10 +6,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import com.shoetrack.presentation.pairing.PairingDialog
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -25,12 +21,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -49,6 +45,9 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -73,6 +72,7 @@ import com.shoetrack.presentation.components.progressColorFor
 import com.shoetrack.presentation.format.format
 import com.shoetrack.presentation.format.formatAsPercent
 import com.shoetrack.presentation.format.formatAsTime
+import com.shoetrack.presentation.pairing.PairingDialog
 import com.shoetrack.presentation.photo.ShoePhoto
 import com.shoetrack.presentation.theme.ShoeTrackTheme
 import org.jetbrains.compose.resources.StringResource
@@ -119,7 +119,14 @@ fun LayawayListScreen(
     val pairingState by viewModel.pairingState.collectAsState()
     var showPairing by remember { mutableStateOf(false) }
     LayawayListContent(
-        uiState, query, syncStatus, viewModel::onQueryChange, viewModel::onFilterChange, onNewLayaway, onScanNotebook, onOpenLayaway,
+        uiState,
+        query,
+        syncStatus,
+        viewModel::onQueryChange,
+        viewModel::onFilterChange,
+        onNewLayaway,
+        onScanNotebook,
+        onOpenLayaway,
         onSyncClick = { showPairing = true },
     )
     if (showPairing) {
@@ -245,13 +252,14 @@ private fun Header(status: SyncStatus, onSyncClick: () -> Unit) {
 
 @Composable
 private fun SyncPill(status: SyncStatus, onClick: () -> Unit) {
-    val text = when {
-        status.hasFailed -> stringResource(Res.string.sync_failed)
-        status.isSyncing -> stringResource(Res.string.sync_in_progress)
-        status.nearbyDevices == 0 -> stringResource(Res.string.sync_no_devices)
-        status.lastSyncAt == null -> stringResource(Res.string.sync_nearby, status.nearbyDevices)
-        else -> stringResource(Res.string.sync_nearby_synced, status.nearbyDevices, status.lastSyncAt.formatAsTime())
-    }
+    val text =
+        when {
+            status.hasFailed -> stringResource(Res.string.sync_failed)
+            status.isSyncing -> stringResource(Res.string.sync_in_progress)
+            status.nearbyDevices == 0 -> stringResource(Res.string.sync_no_devices)
+            status.lastSyncAt == null -> stringResource(Res.string.sync_nearby, status.nearbyDevices)
+            else -> stringResource(Res.string.sync_nearby_synced, status.nearbyDevices, status.lastSyncAt.formatAsTime())
+        }
     val connected = status.nearbyDevices > 0 && !status.hasFailed
     val pulse by rememberInfiniteTransition().animateFloat(
         initialValue = 1f,
@@ -259,7 +267,8 @@ private fun SyncPill(status: SyncStatus, onClick: () -> Unit) {
         animationSpec = infiniteRepeatable(tween(1100), RepeatMode.Reverse),
     )
     Row(
-        modifier = Modifier
+        modifier =
+        Modifier
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClick)
@@ -268,7 +277,11 @@ private fun SyncPill(status: SyncStatus, onClick: () -> Unit) {
     ) {
         val dot = if (connected) ShoeTrackTheme.colors.live else MaterialTheme.colorScheme.outline
         Box(
-            Modifier.size(8.dp).alpha(if (connected) pulse else 1f).clip(CircleShape).background(dot),
+            Modifier
+                .size(8.dp)
+                .alpha(if (connected) pulse else 1f)
+                .clip(CircleShape)
+                .background(dot),
         )
         Spacer(Modifier.width(8.dp))
         Text(
@@ -285,7 +298,8 @@ private fun SyncPill(status: SyncStatus, onClick: () -> Unit) {
 private fun OwedHero(totals: LayawayTotals) {
     val colors = ShoeTrackTheme.colors
     Box(
-        modifier = Modifier
+        modifier =
+        Modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.extraLarge)
             .background(colors.hero)
@@ -293,7 +307,12 @@ private fun OwedHero(totals: LayawayTotals) {
     ) {
         SneakerIllustration(
             colorway = colors.colorways.first(),
-            modifier = Modifier.align(Alignment.TopEnd).offset(x = 36.dp, y = (-6).dp).width(130.dp).rotate(-9f),
+            modifier =
+            Modifier
+                .align(Alignment.TopEnd)
+                .offset(x = 36.dp, y = (-6).dp)
+                .width(130.dp)
+                .rotate(-9f),
         )
         Column {
             Text(
@@ -333,7 +352,8 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
         },
         singleLine = true,
         shape = CircleShape,
-        colors = TextFieldDefaults.colors(
+        colors =
+        TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
             focusedIndicatorColor = Color.Transparent,
@@ -368,7 +388,8 @@ private fun FilterChips(selected: LayawayFilter, onSelect: (LayawayFilter) -> Un
                 onClick = { onSelect(filter) },
                 label = { Text(stringResource(filter.label())) },
                 shape = CircleShape,
-                colors = FilterChipDefaults.filterChipColors(
+                colors =
+                FilterChipDefaults.filterChipColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     selectedContainerColor = ShoeTrackTheme.colors.hero,
@@ -423,9 +444,12 @@ private fun LayawayCard(layaway: LayawaySummary, onClick: () -> Unit, modifier: 
                         )
                     }
                     when {
-                        isOverdue -> Badge(
-                            stringResource(Res.string.state_overdue), colors.overdueBadge, colors.onOverdueBadge,
-                        )
+                        isOverdue ->
+                            Badge(
+                                stringResource(Res.string.state_overdue),
+                                colors.overdueBadge,
+                                colors.onOverdueBadge,
+                            )
                         isPaid -> Badge(stringResource(Res.string.badge_paid), colors.doneBadge, colors.onDoneBadge)
                     }
                 }
@@ -488,28 +512,29 @@ private fun EmptyState(title: String, message: String?) {
 @Preview
 @Composable
 private fun LayawayListContentPreview() {
-    val samples = listOf(
-        LayawaySummary(
-            id = "1",
-            customerName = "Ana Perez",
-            productDescription = "Nike Air Force 42",
-            productPhotoPath = "",
-            remainingBalance = Money.fromUnits(180_000),
-            totalPrice = Money.fromUnits(300_000),
-            state = LayawayState.Active,
-            lastPaymentAt = Instant.parse("2026-10-01T00:00:00Z"),
-        ),
-        LayawaySummary(
-            id = "2",
-            customerName = "Luis Gomez",
-            productDescription = "Adidas Samba 40",
-            productPhotoPath = "",
-            remainingBalance = Money.fromUnits(95_000),
-            totalPrice = Money.fromUnits(310_000),
-            state = LayawayState.Overdue,
-            lastPaymentAt = Instant.parse("2026-08-15T00:00:00Z"),
-        ),
-    )
+    val samples =
+        listOf(
+            LayawaySummary(
+                id = "1",
+                customerName = "Ana Perez",
+                productDescription = "Nike Air Force 42",
+                productPhotoPath = "",
+                remainingBalance = Money.fromUnits(180_000),
+                totalPrice = Money.fromUnits(300_000),
+                state = LayawayState.Active,
+                lastPaymentAt = Instant.parse("2026-10-01T00:00:00Z"),
+            ),
+            LayawaySummary(
+                id = "2",
+                customerName = "Luis Gomez",
+                productDescription = "Adidas Samba 40",
+                productPhotoPath = "",
+                remainingBalance = Money.fromUnits(95_000),
+                totalPrice = Money.fromUnits(310_000),
+                state = LayawayState.Overdue,
+                lastPaymentAt = Instant.parse("2026-08-15T00:00:00Z"),
+            ),
+        )
     ShoeTrackTheme {
         LayawayListContent(
             uiState = LayawayListUiState.Loaded(samples, hasAnyLayaways = true, totals = samples.totals()),

@@ -12,14 +12,10 @@ import kotlin.test.assertFailsWith
 import kotlin.time.Instant
 
 class ProcessPaymentUseCaseTest {
-
     private val processPayment = ProcessPaymentUseCase()
     private val baseDate = Instant.parse("2026-01-01T00:00:00Z")
 
-    private fun layaway(
-        balance: Long,
-        state: LayawayState = LayawayState.Active,
-    ) = Layaway(
+    private fun layaway(balance: Long, state: LayawayState = LayawayState.Active) = Layaway(
         id = "layaway-1",
         customerId = "customer-1",
         productId = "product-1",

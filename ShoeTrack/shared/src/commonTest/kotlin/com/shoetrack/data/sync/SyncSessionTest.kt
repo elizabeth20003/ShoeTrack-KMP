@@ -29,7 +29,6 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 class SyncSessionTest {
-
     private val start = Instant.parse("2026-01-01T00:00:00Z")
     private val customer = Customer("customer-1", "Ana Perez", "3001234567", start)
     private val product = Product("product-1", "Nike Air Force 42", "photo-1.jpg", Money(10_000))
@@ -40,24 +39,25 @@ class SyncSessionTest {
         val products = FakeProductRepository()
         val photos = FakePhotoStorage()
         private val syncRepository = FakeSyncRepository(layaways, customers, products)
-        val session = SyncSession(
-            syncRepository = syncRepository,
-            mergeSnapshot = MergeSnapshotUseCase(
+        val session =
+            SyncSession(
                 syncRepository = syncRepository,
-                merger = LayawayMerger(),
-                evaluateOverdue = EvaluateOverdueUseCase(),
-                scheduleReminder = scheduleReminderOf(layaways, customers, products, FakeOverdueReminderScheduler()),
-                clock = FixedClock(Instant.parse("2026-01-02T00:00:00Z")),
-            ),
-            photoStorage = photos,
-        )
+                mergeSnapshot =
+                MergeSnapshotUseCase(
+                    syncRepository = syncRepository,
+                    merger = LayawayMerger(),
+                    evaluateOverdue = EvaluateOverdueUseCase(),
+                    scheduleReminder = scheduleReminderOf(layaways, customers, products, FakeOverdueReminderScheduler()),
+                    clock = FixedClock(Instant.parse("2026-01-02T00:00:00Z")),
+                ),
+                photoStorage = photos,
+            )
     }
 
-    private class InMemoryChannel(
-        private val incoming: Channel<SyncMessage>,
-        private val outgoing: Channel<SyncMessage>,
-    ) : MessageChannel {
+    private class InMemoryChannel(private val incoming: Channel<SyncMessage>, private val outgoing: Channel<SyncMessage>) :
+        MessageChannel {
         override suspend fun send(message: SyncMessage) = outgoing.send(message)
+
         override suspend fun receive(): SyncMessage = incoming.receive()
     }
 
@@ -74,23 +74,23 @@ class SyncSessionTest {
         serving.await()
     }
 
-    private fun payment(id: String, amount: Long, device: String) =
-        Payment(id, "layaway-1", Money(amount), start + 1.days, device)
+    private fun payment(id: String, amount: Long, device: String) = Payment(id, "layaway-1", Money(amount), start + 1.days, device)
 
     private fun Device.store(vararg payments: Payment, withPhoto: Boolean = false) {
         customers.customers[customer.id] = customer
         products.products[product.id] = product
         val paid = payments.fold(Money.ZERO) { total, payment -> total + payment.amount }
-        layaways.layaways["layaway-1"] = Layaway(
-            id = "layaway-1",
-            customerId = customer.id,
-            productId = product.id,
-            remainingBalance = product.totalPrice - paid,
-            state = LayawayState.Active,
-            createdAt = start,
-            lastPaymentAt = payments.maxOfOrNull { it.paidAt } ?: start,
-            payments = payments.toList(),
-        )
+        layaways.layaways["layaway-1"] =
+            Layaway(
+                id = "layaway-1",
+                customerId = customer.id,
+                productId = product.id,
+                remainingBalance = product.totalPrice - paid,
+                state = LayawayState.Active,
+                createdAt = start,
+                lastPaymentAt = payments.maxOfOrNull { it.paidAt } ?: start,
+                payments = payments.toList(),
+            )
         if (withPhoto) photos.photos["photo-1.jpg"] = byteArrayOf(1, 2, 3)
     }
 
@@ -101,7 +101,12 @@ class SyncSessionTest {
 
         sync(initiator = newPhone, responder = shop)
 
-        assertEquals(Money(8_000), newPhone.layaways.layaways.getValue("layaway-1").remainingBalance)
+        assertEquals(
+            Money(8_000),
+            newPhone.layaways.layaways
+                .getValue("layaway-1")
+                .remainingBalance,
+        )
         assertContentEquals(byteArrayOf(1, 2, 3), newPhone.photos.photos["photo-1.jpg"])
     }
 
@@ -131,10 +136,11 @@ class SyncSessionTest {
 
     @Test
     fun aPhotoNameThatCouldEscapeTheFolderIsNeverRequested() = runTest {
-        val shop = Device().apply {
-            store()
-            products.products[product.id] = product.copy(photoPath = "../secret.jpg")
-        }
+        val shop =
+            Device().apply {
+                store()
+                products.products[product.id] = product.copy(photoPath = "../secret.jpg")
+            }
         val phone = Device()
 
         sync(initiator = phone, responder = shop)

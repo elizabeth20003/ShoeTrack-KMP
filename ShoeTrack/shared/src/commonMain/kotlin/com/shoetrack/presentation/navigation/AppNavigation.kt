@@ -22,10 +22,7 @@ import org.koin.core.parameter.parametersOf
 import org.koin.mp.KoinPlatform
 
 @Composable
-fun AppNavigation(
-    layawayToOpen: String? = null,
-    onLayawayOpened: () -> Unit = {},
-) {
+fun AppNavigation(layawayToOpen: String? = null, onLayawayOpened: () -> Unit = {}) {
     val navController = rememberNavController()
     val koin = KoinPlatform.getKoin()
 
@@ -80,10 +77,14 @@ private fun NotebookEntry.toRoute() = NewLayawayRoute(
     lastPaymentEpochDay = lastPaymentDate?.toEpochDays()?.toLong(),
 )
 
-private fun NewLayawayRoute.toNotebookEntry(): NotebookEntry? = if (!fromNotebook) null else NotebookEntry(
-    customerName = customerName,
-    productDescription = productDescription,
-    totalPrice = priceUnits?.let(Money::fromUnits),
-    paidAmount = paidUnits?.let(Money::fromUnits),
-    lastPaymentDate = lastPaymentEpochDay?.let { LocalDate.fromEpochDays(it) },
-)
+private fun NewLayawayRoute.toNotebookEntry(): NotebookEntry? = if (!fromNotebook) {
+    null
+} else {
+    NotebookEntry(
+        customerName = customerName,
+        productDescription = productDescription,
+        totalPrice = priceUnits?.let(Money::fromUnits),
+        paidAmount = paidUnits?.let(Money::fromUnits),
+        lastPaymentDate = lastPaymentEpochDay?.let { LocalDate.fromEpochDays(it) },
+    )
+}

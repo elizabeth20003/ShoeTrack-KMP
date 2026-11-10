@@ -28,7 +28,6 @@ import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 class LayawayDetailViewModelTest : MainDispatcherTest() {
-
     private val now = Instant.parse("2026-02-01T00:00:00Z")
     private val layaways = FakeLayawayRepository()
     private val customers = FakeCustomerRepository()
@@ -37,21 +36,23 @@ class LayawayDetailViewModelTest : MainDispatcherTest() {
     private fun storeLayaway() {
         customers.customers["customer-1"] = Customer("customer-1", "Ana Perez", "3001234567", now)
         products.products["product-1"] = Product("product-1", "Nike Air Force 42", "", Money.fromUnits(100_000))
-        layaways.layaways["layaway-1"] = Layaway(
-            id = "layaway-1",
-            customerId = "customer-1",
-            productId = "product-1",
-            remainingBalance = Money.fromUnits(100_000),
-            state = LayawayState.Active,
-            createdAt = now,
-            lastPaymentAt = now,
-        )
+        layaways.layaways["layaway-1"] =
+            Layaway(
+                id = "layaway-1",
+                customerId = "customer-1",
+                productId = "product-1",
+                remainingBalance = Money.fromUnits(100_000),
+                state = LayawayState.Active,
+                createdAt = now,
+                lastPaymentAt = now,
+            )
     }
 
     private fun viewModel(layawayId: String = "layaway-1") = LayawayDetailViewModel(
         layawayId = layawayId,
         getLayawayDetail = GetLayawayDetailUseCase(layaways, customers, products),
-        registerPayment = RegisterPaymentUseCase(
+        registerPayment =
+        RegisterPaymentUseCase(
             layawayRepository = layaways,
             processPayment = ProcessPaymentUseCase(),
             idGenerator = SequentialIdGenerator(),
@@ -114,7 +115,12 @@ class LayawayDetailViewModelTest : MainDispatcherTest() {
         viewModel.confirmPayment()
 
         assertEquals(LayawayDetailEvent.PaymentFailed, viewModel.events.first())
-        assertEquals(Money.fromUnits(100_000), viewModel.uiState.value.detail?.layaway?.remainingBalance)
+        assertEquals(
+            Money.fromUnits(100_000),
+            viewModel.uiState.value.detail
+                ?.layaway
+                ?.remainingBalance,
+        )
     }
 
     @Test

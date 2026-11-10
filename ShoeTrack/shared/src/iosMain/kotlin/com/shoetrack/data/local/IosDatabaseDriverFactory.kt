@@ -5,7 +5,5 @@ import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import com.shoetrack.db.ShoeTrackDatabase
 
 class IosDatabaseDriverFactory : DatabaseDriverFactory {
-
-    override fun createDriver(): SqlDriver =
-        NativeSqliteDriver(ShoeTrackDatabase.Schema, DATABASE_NAME)
+    override fun createDriver(): SqlDriver = NativeSqliteDriver(ShoeTrackDatabase.Schema, DATABASE_NAME)
 }

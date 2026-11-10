@@ -20,7 +20,6 @@ import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 class ScanViewModelTest : MainDispatcherTest() {
-
     private val recognizer = FakeTextRecognizer()
     private val clock = FixedClock(Instant.parse("2026-11-04T15:00:00Z"))
     private val cloudReader = FakeNotebookReader()

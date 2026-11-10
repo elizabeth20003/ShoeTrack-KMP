@@ -6,7 +6,6 @@ import com.shoetrack.domain.model.LayawayState
 import com.shoetrack.domain.model.Payment
 
 class ProcessPaymentUseCase {
-
     operator fun invoke(layaway: Layaway, payment: Payment): Layaway {
         require(layaway.state !is LayawayState.Cancelled) {
             "Cannot pay a cancelled layaway"

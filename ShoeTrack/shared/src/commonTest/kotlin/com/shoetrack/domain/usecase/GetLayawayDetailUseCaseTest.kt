@@ -16,7 +16,6 @@ import kotlin.test.assertFailsWith
 import kotlin.time.Instant
 
 class GetLayawayDetailUseCaseTest {
-
     private val now = Instant.parse("2026-02-01T00:00:00Z")
     private val layaways = FakeLayawayRepository()
     private val customers = FakeCustomerRepository()
@@ -25,15 +24,16 @@ class GetLayawayDetailUseCaseTest {
 
     private val customer = Customer("customer-1", "Ana Perez", "3001234567", now)
     private val product = Product("product-1", "Nike Air Force 42", "", Money(100_000))
-    private val layaway = Layaway(
-        id = "layaway-1",
-        customerId = customer.id,
-        productId = product.id,
-        remainingBalance = product.totalPrice,
-        state = LayawayState.Active,
-        createdAt = now,
-        lastPaymentAt = now,
-    )
+    private val layaway =
+        Layaway(
+            id = "layaway-1",
+            customerId = customer.id,
+            productId = product.id,
+            remainingBalance = product.totalPrice,
+            state = LayawayState.Active,
+            createdAt = now,
+            lastPaymentAt = now,
+        )
 
     @Test
     fun combinesLayawayCustomerAndProduct() = runTest {

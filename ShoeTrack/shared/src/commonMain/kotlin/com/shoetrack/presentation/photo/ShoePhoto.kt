@@ -18,18 +18,20 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
 /** Provided once at the app root so any screen can show a stored photo by name. */
-val LocalLoadPhoto = compositionLocalOf<LoadPhotoUseCase> {
-    error("LocalLoadPhoto was not provided")
-}
+val LocalLoadPhoto =
+    compositionLocalOf<LoadPhotoUseCase> {
+        error("LocalLoadPhoto was not provided")
+    }
 
 @Composable
 fun ShoePhoto(name: String, modifier: Modifier = Modifier) {
     val loadPhoto = LocalLoadPhoto.current
     val bitmap by produceState<ImageBitmap?>(initialValue = null, key1 = name) {
-        value = withContext(Dispatchers.Default) {
-            val bytes = loadPhoto(name) ?: return@withContext null
-            runCatchingExceptCancellation { bytes.decodeToImageBitmap() }.getOrNull()
-        }
+        value =
+            withContext(Dispatchers.Default) {
+                val bytes = loadPhoto(name) ?: return@withContext null
+                runCatchingExceptCancellation { bytes.decodeToImageBitmap() }.getOrNull()
+            }
     }
 
     val loaded = bitmap

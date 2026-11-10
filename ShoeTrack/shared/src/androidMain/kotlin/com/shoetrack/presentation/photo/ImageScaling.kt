@@ -15,9 +15,10 @@ internal fun scaleToJpeg(source: ByteArray, maxSidePx: Int): ByteArray {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(source, 0, source.size, bounds)
 
-    val options = BitmapFactory.Options().apply {
-        inSampleSize = sampleSizeFor(max(bounds.outWidth, bounds.outHeight), maxSidePx)
-    }
+    val options =
+        BitmapFactory.Options().apply {
+            inSampleSize = sampleSizeFor(max(bounds.outWidth, bounds.outHeight), maxSidePx)
+        }
     val decoded = BitmapFactory.decodeByteArray(source, 0, source.size, options) ?: return source
 
     val upright = decoded.rotatedBy(exifRotationDegrees(source))
@@ -32,14 +33,15 @@ private fun sampleSizeFor(longestSide: Int, maxSidePx: Int): Int {
     return sample
 }
 
-private fun exifRotationDegrees(source: ByteArray): Float =
-    when (ExifInterface(ByteArrayInputStream(source))
-        .getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
-        ExifInterface.ORIENTATION_ROTATE_90 -> 90f
-        ExifInterface.ORIENTATION_ROTATE_180 -> 180f
-        ExifInterface.ORIENTATION_ROTATE_270 -> 270f
-        else -> 0f
-    }
+private fun exifRotationDegrees(source: ByteArray): Float = when (
+    ExifInterface(ByteArrayInputStream(source))
+        .getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+) {
+    ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+    ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+    ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+    else -> 0f
+}
 
 private fun Bitmap.rotatedBy(degrees: Float): Bitmap {
     if (degrees == 0f) return this
